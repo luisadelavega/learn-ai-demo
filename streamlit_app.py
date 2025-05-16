@@ -1,10 +1,10 @@
 import streamlit as st
 from functions import get_bot_response
 
-# Access API key from Streamlit secrets
-# replicate_api_token = st.secrets["replicate"]["api_key"]
-# # Now you can use the API key
-# os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
+Access API key from Streamlit secrets
+replicate_api_token = st.secrets["replicate"]["api_key"]
+# Now you can use the API key
+os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
 
 # # Optional: load API key from environment
 # replicate_api_token = os.getenv("REPLICATE_API_TOKEN")
