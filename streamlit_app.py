@@ -1,26 +1,39 @@
-import replicate
-import os
 import streamlit as st
+from functions import get_bot_response
 
-# # Access API key from Streamlit secrets
-replicate_api_token = st.secrets["replicate"]["api_key"]
+# Access API key from Streamlit secrets
+# replicate_api_token = st.secrets["replicate"]["api_key"]
+# # Now you can use the API key
+# os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
 
+# # Optional: load API key from environment
+# replicate_api_token = os.getenv("REPLICATE_API_TOKEN")
 
-def get_bot_response(prompt: str, topic: str = "General") -> str:
-    if not replicate_api_token:
-        return "Error: Replicate API token not found."
+st.set_page_config(page_title="Chatbot", page_icon="💬")
 
-    try:
-        # Example using the Mistral model on Replicate
-        output = replicate.run(
-            "mistralai/mistral-7b-instruct-v0.1",
-            input={
-                "prompt": f"{prompt}",
-                "temperature": 0.7,
-                "max_new_tokens": 300,
-                "top_p": 0.9
-            }
-        )
-        return "".join(output)
-    except Exception as e:
-        return f"Error calling Replicate: {str(e)}"
+st.title("💬 Streamlit + Replicate Chatbot")
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+topic = st.selectbox("Choose a topic:", ["General", "Support", "Technical"], key="topic")
+
+# Display previous messages
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+prompt = st.chat_input("Type your message...")
+
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Get response from bot
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            reply = get_bot_response(prompt, topic)
+            st.markdown(reply)
+
+    st.session_state.messages.append({"role": "assistant", "content": reply})
