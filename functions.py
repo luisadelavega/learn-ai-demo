@@ -27,7 +27,7 @@ def get_bot_response(prompt: str) -> str:
                 "max_tokens": 512,
                 "min_tokens": 0,
                 "temperature": 0.6,
-                "prompt_template": "",  # Must be a string
+                "prompt_template": "write as an ai assistant",  # Must be a string
                 "presence_penalty": 1.15,
                 "frequency_penalty": 0.2
             },
