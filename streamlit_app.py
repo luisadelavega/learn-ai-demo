@@ -1,40 +1,59 @@
 import streamlit as st
-from functions import get_bot_response
-import os
+import replicate
 
-# #Access API key from Streamlit secrets
-# replicate_api_token = st.secrets["replicate"]["api_key"]
-# # Now you can use the API key
-# os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
+def get_bot_response(prompt: str) -> str:
+    try:
+        # Load API key from Streamlit secrets
+        api_key = st.secrets["replicate"]["api_key"]
+    except Exception:
+        return "Error: Replicate API token not found."
 
-# # # Optional: load API key from environment
-# # replicate_api_token = os.getenv("REPLICATE_API_TOKEN")
+    try:
+        # Initialize Replicate client
+        client = replicate.Client(api_token=api_key)
 
-st.set_page_config(page_title="Chatbot", page_icon="💬")
+        # Format the prompt using model's required template
+        formatted_prompt = (
+            "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+            "You are a helpful assistant<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
+            f"{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+        )
 
-st.title("💬 Streamlit + Replicate Chatbot")
+        # Streamlit placeholder for dynamic updates
+        output_container = st.empty()
+        final_response = ""
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+        # Stream the response from Replicate
+        for event in client.stream(
+            "meta/meta-llama-3-70b-instruct",
+            input={
+                "prompt": formatted_prompt,
+                "top_p": 0.9,
+                "max_tokens": 512,
+                "min_tokens": 0,
+                "temperature": 0.6,
+                "prompt_template": "",  # <-- Required, must be string not None
+                "presence_penalty": 1.15,
+                "frequency_penalty": 0.2
+            },
+        ):
+            final_response += str(event)
+            output_container.markdown(final_response)
 
-topic = st.selectbox("Choose a topic:", ["General", "Support", "Technical"], key="topic")
+        return final_response
 
-# Display previous messages
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    except Exception as e:
+        return f"Error calling Replicate: {str(e)}"
 
-prompt = st.chat_input("Type your message...")
+
+# Streamlit UI
+st.set_page_config(page_title="Chat with LLaMA 3", page_icon="🦙")
+st.title("🦙 Chat with LLaMA 3 (70B Instruct)")
+
+prompt = st.text_input("Ask a question:")
 
 if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # Get response from bot
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            reply = get_bot_response(prompt)
-            st.markdown(reply)
-
-    st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.write("Generating response...")
+    reply = get_bot_response(prompt)
+    st.markdown("**Full response:**")
+    st.markdown(reply)
