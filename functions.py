@@ -1,19 +1,16 @@
-# functions.py
-
-import os
 import replicate
 import streamlit as st
 
 def get_bot_response(prompt: str, topic: str = "General") -> str:
     try:
-        # Load API key from Streamlit secrets dynamically
-        replicate_api_token = st.secrets["replicate"]["api_key"]
-        os.environ["REPLICATE_API_TOKEN"] = replicate_api_token
+        api_key = st.secrets["replicate"]["api_key"]
     except Exception:
         return "Error: Replicate API token not found."
 
     try:
-        output = replicate.run(
+        client = replicate.Client(api_token=api_key)
+
+        output = client.run(
             "mistralai/mistral-7b-instruct-v0.1",
             input={
                 "prompt": prompt,
