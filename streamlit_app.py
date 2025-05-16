@@ -34,7 +34,7 @@ if prompt:
     # Get response from bot
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            reply = get_bot_response(prompt, topic)
+            reply = get_bot_response(prompt)
             st.markdown(reply)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
