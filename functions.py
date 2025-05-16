@@ -1,10 +1,13 @@
-import replicate
 import os
 import streamlit as st
+import replicate
 
-# # Access API key from Streamlit secrets
-replicate_api_token = st.secrets["replicate"]["api_key"]
-#os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
+# Load Replicate API key from Streamlit secrets
+replicate_api_token = st.secrets.get("replicate", {}).get("api_key")
+
+# Set the token as an environment variable (Replicate uses this automatically)
+if replicate_api_token:
+    os.environ["REPLICATE_API_TOKEN"] = replicate_api_token
 
 
 def get_bot_response(prompt: str, topic: str = "General") -> str:
@@ -12,11 +15,11 @@ def get_bot_response(prompt: str, topic: str = "General") -> str:
         return "Error: Replicate API token not found."
 
     try:
-        # Example using the Mistral model on Replicate
+        # Call Mistral model from Replicate
         output = replicate.run(
             "mistralai/mistral-7b-instruct-v0.1",
             input={
-                "prompt": f"{prompt}",
+                "prompt": prompt,
                 "temperature": 0.7,
                 "max_new_tokens": 300,
                 "top_p": 0.9
