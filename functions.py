@@ -4,6 +4,7 @@ import streamlit as st
 
 # # Access API key from Streamlit secrets
 replicate_api_token = st.secrets["replicate"]["api_key"]
+os.environ['REPLICATE_API_TOKEN'] = replicate_api_token
 
 
 def get_bot_response(prompt: str, topic: str = "General") -> str:
