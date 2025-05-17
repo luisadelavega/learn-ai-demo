@@ -1,18 +1,18 @@
 import streamlit as st
-from openai import OpenAI, OpenAIError
+import openai
 
 # --- Initialize OpenAI client ---
 def get_client():
     try:
-        api_key = st.secrets["openai"]["api_key"]
-        return OpenAI(api_key=api_key)
+        openai.api_key = st.secrets["openai"]["api_key"]
+        return openai
     except Exception:
         st.error("OpenAI API key not found.")
         return None
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
-    final_text=f"""
+    final_text = f"""
 You are a knowledge assessment evaluator for employee training on the topic of {topic}.
 
 Follow these instructions carefully:
@@ -40,6 +40,7 @@ User Answer: {answer}
 Now respond according to the rules above."""
     return final_text.strip()
 
+# --- Evaluate response ---
 def evaluate_user_response(question: str, answer: str, topic: str, attempts: int, model: str = "gpt-4o") -> str:
     client = get_client()
     if not client:
