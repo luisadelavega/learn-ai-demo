@@ -90,7 +90,7 @@ def get_questions_for_topic(topic: str) -> list:
             "What would you do if you receive a suspicious email asking for credentials?"
         ],
         "EU AI Act": [
-            "What is the main objective of the EU AI Act?"]
+            "What is the main objective of the EU AI Act?"
         ],
         "Maatschappelijke agenda 2023-2027": [
             "What is the primary goal of the Maatschappelijke agenda 2023-2027?",
