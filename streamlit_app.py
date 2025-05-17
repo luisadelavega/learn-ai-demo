@@ -14,9 +14,6 @@ if "messages" not in st.session_state:
 if "chat_started" not in st.session_state:
     st.session_state.chat_started = False
 
-if "topic" not in st.session_state:
-    st.session_state.topic = "General"
-
 # --- Sidebar Navigation ---
 with st.sidebar:
     st.markdown("## 🔍 Navigation")
@@ -33,8 +30,8 @@ st.subheader("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB ---
 if st.session_state.page == "User":
-    # Topic Selection
-    st.session_state.topic = st.selectbox(
+    # Use a selectbox to choose topic — the value is stored in session_state['topic']
+    selected_topic = st.selectbox(
         "Choose a topic:", ["General", "GDPR", "Cybersecurity"], key="topic"
     )
 
@@ -44,7 +41,7 @@ if st.session_state.page == "User":
         st.session_state.messages = []
 
         # Ask the first question based on the selected topic
-        first_question = get_questions_for_topic(st.session_state.topic)[0]
+        first_question = get_questions_for_topic(selected_topic)[0]
         st.session_state.messages.append({
             "role": "assistant",
             "content": first_question
@@ -81,3 +78,4 @@ if st.session_state.page == "User":
 elif st.session_state.page == "Manager":
     st.subheader("📊 Manager Dashboard")
     st.info("This section is under development. Check back soon!")
+
