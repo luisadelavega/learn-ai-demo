@@ -1,10 +1,10 @@
 import streamlit as st
-from functions import get_bot_response
+from functions import get_bot_response, get_questions_for_topic
 
 # Page setup
 st.set_page_config(page_title="Nubo Knowledge Checker", page_icon="🧠")
 
-# Initialize session state
+# --- Session State Setup ---
 if "page" not in st.session_state:
     st.session_state.page = "User"
 
@@ -13,6 +13,9 @@ if "messages" not in st.session_state:
 
 if "chat_started" not in st.session_state:
     st.session_state.chat_started = False
+
+if "topic" not in st.session_state:
+    st.session_state.topic = "General"
 
 # --- SIDEBAR NAVIGATION ---
 with st.sidebar:
@@ -28,16 +31,26 @@ with st.sidebar:
     if manager_btn:
         st.session_state.page = "Manager"
 
-# --- PAGE HEADER ---
+# --- HEADER ---
 st.title("🧠 Nubo Knowledge Checker")
-st.write("Test your understanding and get instant feedback from Nubo.")
+st.subheader("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB ---
 if st.session_state.page == "User":
-    topic = st.selectbox("Choose a topic:", ["AI EU Act", "Maatschappelijke agenda 2023-2027", "Other"], key="topic")
+    # Topic selection
+    topic = st.selectbox("Choose a topic:", ["General", "GDPR", "Cybersecurity"], key="topic")
 
     if st.button("▶️ Start"):
         st.session_state.chat_started = True
+        st.session_state.topic = topic
+        st.session_state.messages = []
+
+        # Ask the first question automatically
+        first_question = get_questions_for_topic(topic)[0]
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": first_question
+        })
 
     if st.session_state.chat_started:
         # Show chat history
@@ -49,7 +62,7 @@ if st.session_state.page == "User":
         prompt = st.chat_input("Type your message...")
 
         if prompt:
-            # Append user message
+            # Append user's message
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -60,10 +73,10 @@ if st.session_state.page == "User":
                     reply = get_bot_response(prompt)
                     st.markdown(reply)
 
-            # Append assistant message
+            # Append assistant's response
             st.session_state.messages.append({"role": "assistant", "content": reply})
-    #else:
-        #st.info("Select a topic and click 'Start' to begin the chat.")
+    else:
+        st.info("Select a topic and click 'Start' to begin the chat.")
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
