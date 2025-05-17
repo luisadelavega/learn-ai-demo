@@ -9,14 +9,13 @@ def get_bot_response(prompt: str, model: str = "gpt-4") -> str:
     except Exception:
         return "Error: OpenAI API key not found in Streamlit secrets."
 
-    openai.api_key = api_key
+    client = OpenAI(api_key=api_key)
 
     try:
         output_container = st.empty()
         final_response = ""
 
-        # Stream response
-        response = openai.ChatCompletion.create(
+        stream = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -26,15 +25,14 @@ def get_bot_response(prompt: str, model: str = "gpt-4") -> str:
             top_p=0.9,
             presence_penalty=1.15,
             frequency_penalty=0.2,
-            stream=True  # This enables streaming in OpenAI API
+            stream=True
         )
 
-        for chunk in response:
-            if "choices" in chunk and len(chunk["choices"]) > 0:
-                delta = chunk["choices"][0]["delta"]
-                if "content" in delta:
-                    final_response += delta["content"]
-                    output_container.markdown(final_response)
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                token = chunk.choices[0].delta.content
+                final_response += token
+                output_container.markdown(final_response)
 
         return final_response
 
