@@ -81,12 +81,12 @@ if st.session_state.page == "User":
                 with st.chat_message("assistant"):
                     st.markdown(bot_reply)
 
-                # Move to next question
-                st.session_state.question_index += 1
+                # # Move to next question
+                # st.session_state.question_index += 1
 
-                if st.session_state.question_index < len(st.session_state.questions):
-                    next_q = st.session_state.questions[st.session_state.question_index]
-                    st.session_state.messages.append({"role": "assistant", "content": next_q})
+                # if st.session_state.question_index < len(st.session_state.questions):
+                #     next_q = st.session_state.questions[st.session_state.question_index]
+                #     st.session_state.messages.append({"role": "assistant", "content": next_q})
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
