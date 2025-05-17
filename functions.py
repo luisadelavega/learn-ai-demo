@@ -79,14 +79,19 @@ def evaluate_user_response(question: str, answer: str, topic: str) -> str:
 
 
 def get_questions_for_topic(topic: str) -> list:
+    if topic == "Other":
+        return [
+            "What topic do you want to evaluate your knowledge of?"
+        ]
+
     default = [
         f"What is an important concept in {topic} every employee should understand?",
         f"How would you react to a challenge related to {topic} at work?",
         f"What could help prevent mistakes in {topic}?",
-        f"How would you explain {topic}'s importance to a new colleague?",
+        f"How would you explain the importance of {topic} to a new colleague?",
         f"What’s the first thing to do when facing a problem in {topic}?"
     ]
-    
+
     return {
         "GDPR": [
             "What is the main purpose of the GDPR regulation?",
@@ -101,7 +106,20 @@ def get_questions_for_topic(topic: str) -> list:
             "How would you secure sensitive information you work with daily?",
             "What steps should be taken to prevent phishing attacks?",
             "What would you do if you receive a suspicious email asking for credentials?"
+        ],
+        "EU AI Act": [
+            "What is the main objective of the EU AI Act?",
+            "How does the EU AI Act classify high-risk AI systems?",
+            "What responsibilities do organizations have under the EU AI Act?",
+            "What kinds of AI practices are prohibited under the EU AI Act?",
+            "How can companies ensure compliance with the EU AI Act during AI development?"
+        ],
+        "Maatschappelijke agenda 2023-2027": [
+            "What is the primary goal of the Maatschappelijke agenda 2023-2027?",
+            "How does this agenda influence your daily work or role?",
+            "Which societal challenges are being addressed by the agenda?",
+            "What actions can employees take to contribute to its objectives?",
+            "Why is it important for organizations to align with this agenda?"
         ]
     }.get(topic, default)
-
 
