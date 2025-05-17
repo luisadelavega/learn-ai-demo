@@ -3,26 +3,43 @@ import replicate
 import openai
 
 
-def get_bot_response(prompt: str, topic: str = "General") -> str:
+def get_bot_response(prompt: str, model: str = "gpt-4") -> str:
     try:
+        api_key = st.secrets["openai"]["api_key"]
+    except Exception:
+        return "Error: OpenAI API key not found in Streamlit secrets."
+
+    openai.api_key = api_key
+
+    try:
+        output_container = st.empty()
+        final_response = ""
+
+        # Stream response
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Or "gpt-4" if you have access
+            model=model,
             messages=[
-                {"role": "system", "content": f"You are a helpful assistant specialized in {topic.lower()}."},
+                {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=500,
-            top_p=1.0,
-            frequency_penalty=0.0,
-            presence_penalty=0.0
+            temperature=0.6,
+            top_p=0.9,
+            presence_penalty=1.15,
+            frequency_penalty=0.2,
+            stream=True  # This enables streaming in OpenAI API
         )
-        return response.choices[0].message["content"].strip()
-    except Exception as e:
-        return f"Error from OpenAI: {str(e)}"
+
+        for chunk in response:
+            if "choices" in chunk and len(chunk["choices"]) > 0:
+                delta = chunk["choices"][0]["delta"]
+                if "content" in delta:
+                    final_response += delta["content"]
+                    output_container.markdown(final_response)
+
+        return final_response
 
     except Exception as e:
-        return f"Error calling Replicate: {str(e)}"
+        return f"Error calling OpenAI API: {str(e)}"
 
 
 def get_evaluation_prompt(question: str, answer: str, topic: str) -> str:
