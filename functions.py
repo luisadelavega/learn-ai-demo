@@ -13,9 +13,6 @@ def get_bot_response(prompt: str, model: str = "gpt-4o-mini") -> str:
 
     client = OpenAI(api_key=api_key)
 
-    models = client.models.list()
-    st.write([m.id for m in models.data])
-
     try:
         output_container = st.empty()
         final_response = ""
