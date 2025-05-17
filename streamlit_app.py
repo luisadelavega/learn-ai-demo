@@ -32,7 +32,7 @@ st.subheader("Test your understanding and get instant feedback from Nubo.")
 if st.session_state.page == "User":
     # Use a selectbox to choose topic — the value is stored in session_state['topic']
     selected_topic = st.selectbox(
-        "Choose a topic:", ["General", "GDPR", "Cybersecurity"], key="topic"
+        "Choose a topic:", ["EU AI Act", "GDPR", "Cybersecurity", "Maatschappelijke agenda 2023-2027", "Other"], key="topic"
     )
 
     # Start button
