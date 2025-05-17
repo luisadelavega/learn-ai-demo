@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI, OpenAIError
 
-# --- LLM Client ---
+# --- Initialize OpenAI client ---
 def get_client():
     try:
         api_key = st.secrets["openai"]["api_key"]
@@ -10,76 +10,38 @@ def get_client():
         st.error("OpenAI API key not found.")
         return None
 
-# --- Streamed LLM Response (for open chat) ---
-def get_bot_response(prompt: str, model: str = "gpt-4o") -> str:
-    client = get_client()
-    if not client:
-        return "Error: Could not initialize OpenAI client."
-
-    try:
-        output_container = st.empty()
-        final_response = ""
-
-        stream = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.6,
-            top_p=0.9,
-            presence_penalty=1.15,
-            frequency_penalty=0.2,
-            stream=True
-        )
-
-        for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content:
-                token = chunk.choices[0].delta.content
-                final_response += token
-                output_container.markdown(final_response)
-
-        return final_response
-
-    except OpenAIError as e:
-        return f"OpenAI error: {e}"
-    except Exception as e:
-        return f"Unexpected error: {e}"
-
-# --- Evaluation Prompt Builder ---
-def get_evaluation_prompt(question: str, answer: str, topic: str) -> str:
+# --- Evaluation Prompt Builder with Bot Behavior Rules ---
+def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
     return f"""
-You are a knowledge assessment evaluator for employee training on the topic of {topic}.
+You are a knowledge assessment evaluator for employee training on the topic of "{topic}".
 
-Evaluate the user's answer to the following question. Be strict but constructive. If the answer is vague, incomplete, or off-topic, note that clearly. Otherwise, highlight strengths and improvement areas.
+Follow these instructions carefully:
 
-Respond in this format:
+1. Ask questions only — do not explain, summarize, or shift the topic.
+2. If the user's answer is vague, incomplete, or off-topic, ask a clarifying follow-up.
+3. Stop after 3 unclear replies and say: "Let's move on to the next question."
+4. If the user asks something off-topic, respond with: "My goal is to check your knowledge. Let's complete the assessment first."
+5. If this is the last question, give a short, structured evaluation with strengths and improvement points.
+6. Keep your tone professional, clear, and supportive.
 
-Strengths:
-- ...
-
-Weaknesses:
-- ...
-
-Suggestions:
-- ...
-
-Rating: Needs Improvement / Good / Excellent
+Current Attempt: {attempts}/3
 
 ---
 
 Question: {question}
 
-Answer: {answer}
+User Answer: {answer}
+
+Now respond according to the rules.
 """.strip()
 
-# --- Evaluate a Single User Response ---
-def evaluate_user_response(question: str, answer: str, topic: str, model: str = "gpt-4o") -> str:
+# --- Call OpenAI to evaluate a user response ---
+def evaluate_user_response(question: str, answer: str, topic: str, attempts: int, model: str = "gpt-4o") -> str:
     client = get_client()
     if not client:
         return "Error: No OpenAI client."
 
-    prompt = get_evaluation_prompt(question, answer, topic)
+    prompt = get_evaluation_prompt(question, answer, topic, attempts)
 
     try:
         completion = client.chat.completions.create(
@@ -94,7 +56,7 @@ def evaluate_user_response(question: str, answer: str, topic: str, model: str = 
     except Exception as e:
         return f"Error evaluating response: {e}"
 
-# --- Question Templates per Topic ---
+# --- Return 5 questions per topic ---
 def get_questions_for_topic(topic: str) -> list:
     if topic == "Other":
         return ["What topic do you want to evaluate your knowledge of?"]
@@ -137,4 +99,3 @@ def get_questions_for_topic(topic: str) -> list:
             "Why is it important for organizations to align with this agenda?"
         ]
     }.get(topic, default)
-
