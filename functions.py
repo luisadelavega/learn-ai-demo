@@ -1,17 +1,20 @@
 import streamlit as st
-import replicate
-import openai
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
-def get_bot_response(prompt: str, model: str = "gpt-4o-mini") -> str:
-
-
+# --- LLM Client ---
+def get_client():
     try:
         api_key = st.secrets["openai"]["api_key"]
+        return OpenAI(api_key=api_key)
     except Exception:
-        return "Error: OpenAI API key not found in Streamlit secrets."
+        st.error("OpenAI API key not found.")
+        return None
 
-    client = OpenAI(api_key=api_key)
+# --- Streamed LLM Response (for open chat) ---
+def get_bot_response(prompt: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: Could not initialize OpenAI client."
 
     try:
         output_container = st.empty()
@@ -38,51 +41,63 @@ def get_bot_response(prompt: str, model: str = "gpt-4o-mini") -> str:
 
         return final_response
 
+    except OpenAIError as e:
+        return f"OpenAI error: {e}"
     except Exception as e:
-        return f"Error calling OpenAI API: {str(e)}"
+        return f"Unexpected error: {e}"
 
-
+# --- Evaluation Prompt Builder ---
 def get_evaluation_prompt(question: str, answer: str, topic: str) -> str:
     return f"""
-You are an expert in training employees on the topic of {topic}.
+You are a knowledge assessment evaluator for employee training on the topic of {topic}.
 
-Your task is to evaluate a single answer to an open-ended question. Use the following structure:
-
-Question:
-{question}
-
-User Answer:
-{answer}
-
-Your evaluation must include:
-✅ Strengths: What is correct or well thought-out.  
-⚠️ Weaknesses: What is missing, incorrect, or potentially risky.  
-💡 Suggestions: 1–2 practical tips for improvement.  
-⭐ Rating: One of the following - Needs Improvement / Good / Excellent
-
-Keep your tone constructive and professional.
+Evaluate the user's answer to the following question. Be strict but constructive. If the answer is vague, incomplete, or off-topic, note that clearly. Otherwise, highlight strengths and improvement areas.
 
 Respond in this format:
+
 Strengths:
 - ...
+
 Weaknesses:
 - ...
+
 Suggestions:
 - ...
-Rating: ...
+
+Rating: Needs Improvement / Good / Excellent
+
+---
+
+Question: {question}
+
+Answer: {answer}
 """.strip()
 
+# --- Evaluate a Single User Response ---
+def evaluate_user_response(question: str, answer: str, topic: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: No OpenAI client."
 
-def evaluate_user_response(question: str, answer: str, topic: str) -> str:
     prompt = get_evaluation_prompt(question, answer, topic)
-    return get_bot_response(prompt)
 
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a knowledge assessment evaluator."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error evaluating response: {e}"
 
+# --- Question Templates per Topic ---
 def get_questions_for_topic(topic: str) -> list:
     if topic == "Other":
-        return [
-            "What topic do you want to evaluate your knowledge of?"
-        ]
+        return ["What topic do you want to evaluate your knowledge of?"]
 
     default = [
         f"What is an important concept in {topic} every employee should understand?",
