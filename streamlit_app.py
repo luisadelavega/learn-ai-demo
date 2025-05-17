@@ -29,7 +29,7 @@ with st.sidebar:
 
 # --- Page Header ---
 st.title("🧠 Nubo Knowledge Checker")
-st.subheader("Test your understanding and get instant feedback from Nubo.")
+st.write("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB LOGIC ---
 if st.session_state.page == "User":
