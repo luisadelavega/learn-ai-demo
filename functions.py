@@ -10,21 +10,27 @@ def get_client():
         st.error("OpenAI API key not found.")
         return None
 
-# --- Evaluation Prompt Builder with Bot Behavior Rules ---
+# --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
     return f"""
 You are a knowledge assessment evaluator for employee training on the topic of "{topic}".
 
 Follow these instructions carefully:
 
-1. Ask questions only — do not explain, summarize, or shift the topic.
-2. If the user's answer is vague, incomplete, or off-topic, you can ask a follow-up question to ask it in more details.
-3. Stop after 2 unclear replies and say: "Let's move on to the next question."
-4. If the user asks something off-topic, respond with: "My goal is to check your knowledge. Let's complete the assessment first."
-5. If this is the last question, give a short, structured evaluation with strengths and improvement points.
-6. Keep your tone professional, clear, and supportive.
+1. You must ONLY ask questions — do not explain, summarize, or change the topic.
+2. If the user's answer is vague, incomplete, or off-topic, ask a clarifying follow-up.
+3. Allow a maximum of 2 user responses per question. After 2 unclear answers, say: "Let's move on to the next question."
+4. If the user tries to ask something unrelated, reply: "My goal is to check your knowledge. Let's complete the assessment first."
+5. Between one question and the other, write a connection text. For instance: thank you for answer, let's move to the next question.
+5. After the last question, generate a clear, structured evaluation summary, based on the answers. It should includes:
+   - ✅ Strengths
+   - ⚠️ Areas to improve
+   - 💡 Suggestions
+   - ⭐ Overall rating (Needs Improvement / Good / Excellent)
 
-Current Attempt: {attempts}/3
+Stay professional and constructive in your tone.
+
+Current Attempt: {attempts}/2
 
 ---
 
@@ -32,10 +38,10 @@ Question: {question}
 
 User Answer: {answer}
 
-Now respond according to the rules.
+Now respond according to the rules above.
 """.strip()
 
-# --- Call OpenAI to evaluate a user response ---
+# --- Evaluate a single user response using OpenAI ---
 def evaluate_user_response(question: str, answer: str, topic: str, attempts: int, model: str = "gpt-4o") -> str:
     client = get_client()
     if not client:
