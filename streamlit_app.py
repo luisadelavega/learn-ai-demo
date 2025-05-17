@@ -1,6 +1,5 @@
 import streamlit as st
-from functions import get_questions_for_topic
-from functions import evaluate_user_response
+from functions import get_questions_for_topic, evaluate_user_response
 
 # --- Page Config ---
 st.set_page_config(page_title="Nubo Knowledge Checker", page_icon="🧠")
@@ -92,7 +91,7 @@ if st.session_state.page == "User":
 
                 # Check if it's time to move on
                 if (
-                    st.session_state.interaction_count >= 3
+                    st.session_state.interaction_count >= 2  # matches max attempts in prompt
                     or "Let's move on to the next question" in eval_result
                     or "Generating your summary" in eval_result
                 ):
@@ -110,31 +109,11 @@ if st.session_state.page == "User":
                         with st.chat_message("assistant"):
                             st.markdown(next_q)
                     else:
-                        # Final summary
-                        with st.spinner("Generating summary..."):
-                            strengths = []
-                            improvements = []
-
-                            for entry in st.session_state.answers:
-                                eval_text = entry["evaluation"]
-                                if "Strengths:" in eval_text:
-                                    try:
-                                        strengths.append(eval_text.split("Strengths:")[1].split("Weaknesses:")[0].strip())
-                                    except:
-                                        strengths.append("✔️ Could not parse strengths.")
-                                if "Weaknesses:" in eval_text:
-                                    try:
-                                        improvements.append(eval_text.split("Weaknesses:")[1].split("Suggestions:")[0].strip())
-                                    except:
-                                        improvements.append("⚠️ Could not parse weaknesses.")
-
-                            summary = "### ✅ Knowledge Assessment Summary\n\n"
-                            if strengths:
-                                summary += "**Strengths:**\n- " + "\n- ".join(strengths) + "\n\n"
-                            if improvements:
-                                summary += "**Points to Improve:**\n- " + "\n- ".join(improvements)
-
-                            st.markdown(summary)
+                        # Final summary: simply show last assistant message
+                        with st.spinner("Finalizing assessment..."):
+                            last_response = st.session_state.messages[-1]["content"]
+                            st.markdown("### ✅ Knowledge Assessment Summary\n")
+                            st.markdown(last_response)
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
