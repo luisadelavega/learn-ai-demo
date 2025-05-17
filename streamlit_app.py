@@ -108,12 +108,6 @@ if st.session_state.page == "User":
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
                         with st.chat_message("assistant"):
                             st.markdown(next_q)
-                    else:
-                        # Final summary: simply show last assistant message
-                        with st.spinner("Finalizing assessment..."):
-                            last_response = st.session_state.messages[-1]["content"]
-                            st.markdown("### ✅ Knowledge Assessment Summary\n")
-                            st.markdown(last_response)
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
