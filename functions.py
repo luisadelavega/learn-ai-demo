@@ -4,6 +4,8 @@ import openai
 from openai import OpenAI
 
 def get_bot_response(prompt: str, model: str = "gpt-4-turbo") -> str:
+    models = client.models.list()
+    st.write([m.id for m in models.data])
     try:
         api_key = st.secrets["openai"]["api_key"]
     except Exception:
