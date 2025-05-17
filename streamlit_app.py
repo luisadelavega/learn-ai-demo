@@ -91,7 +91,7 @@ if st.session_state.page == "User":
 
                 # Check if it's time to move on
                 if (
-                    st.session_state.interaction_count >= 2  # matches max attempts in prompt
+                    st.session_state.interaction_count > 2  # matches max attempts in prompt
                     or "Let's move on to the next question" in eval_result
                     or "Generating your summary" in eval_result
                 ):
