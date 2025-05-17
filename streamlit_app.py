@@ -11,7 +11,6 @@ st.session_state.setdefault("messages", [])
 st.session_state.setdefault("question_index", 0)
 st.session_state.setdefault("interaction_count", 0)
 st.session_state.setdefault("answers", [])
-st.session_state.setdefault("topic", "General")
 st.session_state.setdefault("questions", [])
 
 # --- Sidebar Navigation ---
@@ -24,6 +23,7 @@ with st.sidebar:
         st.session_state.question_index = 0
         st.session_state.interaction_count = 0
         st.session_state.answers = []
+        st.session_state.questions = []
     if st.button("📊 Manager"):
         st.session_state.page = "Manager"
 
@@ -33,18 +33,16 @@ st.subheader("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB LOGIC ---
 if st.session_state.page == "User":
-    selected_topic = st.selectbox(
+    topic = st.selectbox(
         "Choose a topic:",
         ["EU AI Act", "GDPR", "Cybersecurity", "Maatschappelijke agenda 2023-2027", "Other"],
         key="topic"
     )
 
-    # If topic is "Other", ask the user to type it in
-    if selected_topic == "Other":
+    # If topic is "Other", ask user to enter it
+    if topic == "Other":
         custom_topic = st.text_input("What topic do you want to evaluate your knowledge of?", key="custom_topic")
         topic = custom_topic or "Other"
-    else:
-        topic = selected_topic
 
     if st.button("▶️ Start"):
         st.session_state.chat_started = True
@@ -52,13 +50,12 @@ if st.session_state.page == "User":
         st.session_state.question_index = 0
         st.session_state.interaction_count = 0
         st.session_state.answers = []
-        st.session_state.topic = topic
         st.session_state.questions = get_questions_for_topic(topic)
 
         first_question = st.session_state.questions[0]
         st.session_state.messages.append({"role": "assistant", "content": first_question})
 
-    # Show chat
+    # Show chat interface
     if st.session_state.chat_started:
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
@@ -67,26 +64,23 @@ if st.session_state.page == "User":
         prompt = st.chat_input("Your answer...")
 
         if prompt:
-            # Display user message
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-            current_question = st.session_state.questions[st.session_state.question_index]
+            question = st.session_state.questions[st.session_state.question_index]
 
-            # Simple off-topic check (basic pattern-based fallback)
-            if any(x in prompt.lower() for x in ["what", "who", "how", "why", "can you", "explain", "?"]) and "i think" not in prompt.lower():
-                bot_reply = "My goal is to check your knowledge assessment. Let's complete this assessment first."
+            # Rule 3: Off-topic check
+            if any(x in prompt.lower() for x in ["what is", "explain", "can you", "how do", "?", "who", "when", "why"]) and "i think" not in prompt.lower():
+                bot_reply = "My goal is to check your knowledge. Let's complete the assessment first."
             else:
                 st.session_state.interaction_count += 1
 
-                # Evaluate the user response
-                eval_result = evaluate_user_response(current_question, prompt, st.session_state.topic)
+                eval_result = evaluate_user_response(question, prompt, topic)
 
                 if "Rating: Excellent" in eval_result or "Rating: Good" in eval_result:
-                    # Good enough — store and go to next
                     st.session_state.answers.append({
-                        "question": current_question,
+                        "question": question,
                         "answer": prompt,
                         "evaluation": eval_result
                     })
@@ -99,9 +93,9 @@ if st.session_state.page == "User":
                         bot_reply = "✅ Thank you for completing the assessment. Generating your summary..."
                 elif st.session_state.interaction_count >= 3:
                     st.session_state.answers.append({
-                        "question": current_question,
+                        "question": question,
                         "answer": prompt,
-                        "evaluation": "No clear answer after 3 tries."
+                        "evaluation": "No clear answer after 3 attempts."
                     })
                     st.session_state.question_index += 1
                     st.session_state.interaction_count = 0
@@ -111,7 +105,6 @@ if st.session_state.page == "User":
                     else:
                         bot_reply = "✅ Thank you for completing the assessment. Generating your summary..."
                 else:
-                    # Ask for clarification
                     bot_reply = "Could you clarify or elaborate a bit more on your answer?"
 
             with st.chat_message("assistant"):
@@ -120,7 +113,7 @@ if st.session_state.page == "User":
 
             st.session_state.messages.append({"role": "assistant", "content": bot_reply})
 
-            # After final question
+            # Final summary
             if st.session_state.question_index >= len(st.session_state.questions):
                 with st.spinner("Generating summary..."):
                     strengths = []
@@ -135,9 +128,9 @@ if st.session_state.page == "User":
 
                     summary = "### ✅ Knowledge Assessment Summary\n\n"
                     if strengths:
-                        summary += "**Strengths:**\n- " + "\n- ".join([s for s in strengths]) + "\n\n"
+                        summary += "**Strengths:**\n- " + "\n- ".join(strengths) + "\n\n"
                     if improvements:
-                        summary += "**Points to Improve:**\n- " + "\n- ".join([w for w in improvements])
+                        summary += "**Points to Improve:**\n- " + "\n- ".join(improvements)
 
                     st.markdown(summary)
 
