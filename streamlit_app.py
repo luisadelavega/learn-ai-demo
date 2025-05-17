@@ -1,6 +1,6 @@
 import streamlit as st
 from functions import get_questions_for_topic
-#from functions import evaluate_user_response
+from functions import evaluate_user_response
 
 # --- Page Config ---
 st.set_page_config(page_title="Nubo Knowledge Checker", page_icon="🧠")
