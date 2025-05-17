@@ -1,10 +1,10 @@
 import streamlit as st
 from functions import get_bot_response, get_questions_for_topic
 
-# Page setup
+# --- Page Config ---
 st.set_page_config(page_title="Nubo Knowledge Checker", page_icon="🧠")
 
-# --- Session State Setup ---
+# --- Session State Initialization ---
 if "page" not in st.session_state:
     st.session_state.page = "User"
 
@@ -17,43 +17,42 @@ if "chat_started" not in st.session_state:
 if "topic" not in st.session_state:
     st.session_state.topic = "General"
 
-# --- SIDEBAR NAVIGATION ---
+# --- Sidebar Navigation ---
 with st.sidebar:
     st.markdown("## 🔍 Navigation")
-    user_btn = st.button("👤 User")
-    manager_btn = st.button("📊 Manager")
-
-    if user_btn:
+    if st.button("👤 User"):
         st.session_state.page = "User"
         st.session_state.chat_started = False
         st.session_state.messages = []
-
-    if manager_btn:
+    if st.button("📊 Manager"):
         st.session_state.page = "Manager"
 
-# --- HEADER ---
+# --- Page Header ---
 st.title("🧠 Nubo Knowledge Checker")
 st.subheader("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB ---
 if st.session_state.page == "User":
-    # Topic selection
-    topic = st.selectbox("Choose a topic:", ["General", "GDPR", "Cybersecurity"], key="topic")
+    # Topic Selection
+    st.session_state.topic = st.selectbox(
+        "Choose a topic:", ["General", "GDPR", "Cybersecurity"], key="topic"
+    )
 
+    # Start button
     if st.button("▶️ Start"):
         st.session_state.chat_started = True
-        st.session_state.topic = topic
         st.session_state.messages = []
 
-        # Ask the first question automatically
-        first_question = get_questions_for_topic(topic)[0]
+        # Ask the first question based on the selected topic
+        first_question = get_questions_for_topic(st.session_state.topic)[0]
         st.session_state.messages.append({
             "role": "assistant",
             "content": first_question
         })
 
+    # Show chat only after Start is clicked
     if st.session_state.chat_started:
-        # Show chat history
+        # Display chat history
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
@@ -62,18 +61,18 @@ if st.session_state.page == "User":
         prompt = st.chat_input("Type your message...")
 
         if prompt:
-            # Append user's message
+            # Show user's message
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-            # Get response from bot
+            # Get assistant response
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
                     reply = get_bot_response(prompt)
                     st.markdown(reply)
 
-            # Append assistant's response
+            # Store assistant reply
             st.session_state.messages.append({"role": "assistant", "content": reply})
     else:
         st.info("Select a topic and click 'Start' to begin the chat.")
