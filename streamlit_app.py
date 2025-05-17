@@ -30,11 +30,11 @@ with st.sidebar:
 
 # --- PAGE HEADER ---
 st.title("🧠 Nubo Knowledge Checker")
-st.subheader("Test your understanding and get instant feedback from Nubo.")
+st.write("Test your understanding and get instant feedback from Nubo.")
 
 # --- USER TAB ---
 if st.session_state.page == "User":
-    topic = st.selectbox("Choose a topic:", ["General", "Support", "Technical"], key="topic")
+    topic = st.selectbox("Choose a topic:", ["AI EU Act", "Maatschappelijke agenda 2023-2027", "Other"], key="topic")
 
     if st.button("▶️ Start"):
         st.session_state.chat_started = True
@@ -62,8 +62,8 @@ if st.session_state.page == "User":
 
             # Append assistant message
             st.session_state.messages.append({"role": "assistant", "content": reply})
-    else:
-        st.info("Select a topic and click 'Start' to begin the chat.")
+    #else:
+        #st.info("Select a topic and click 'Start' to begin the chat.")
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
