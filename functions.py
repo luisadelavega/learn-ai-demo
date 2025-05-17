@@ -3,7 +3,7 @@ import replicate
 import openai
 from openai import OpenAI
 
-def get_bot_response(prompt: str, model: str = "gpt-4-turbo") -> str:
+def get_bot_response(prompt: str, model: str = "gpt-4o-mini") -> str:
 
 
     try:
