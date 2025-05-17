@@ -67,7 +67,7 @@ if st.session_state.page == "User":
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
                     reply = get_bot_response(prompt)
-                    st.markdown(reply)
+                    #st.markdown(reply)
 
             # Store assistant reply
             st.session_state.messages.append({"role": "assistant", "content": reply})
