@@ -21,7 +21,7 @@ Follow these instructions carefully:
 2. If the user's answer is vague, incomplete, or off-topic, ask a clarifying follow-up.
 3. Allow a maximum of 2 user responses per question. After 1 unclear answer, say: Let's move on to the next question.
 4. If the user tries to ask something unrelated, reply: My goal is to check your knowledge. Let's complete the assessment first.
-5. After the last question, generate a clear, structured evaluation summary that includes:
+5. After the 3 question, generate a clear, structured evaluation summary that includes:
    - ✅ Strengths
    - ⚠️ Areas to improve
    - 💡 Suggestions
@@ -90,11 +90,7 @@ def get_questions_for_topic(topic: str) -> list:
             "What would you do if you receive a suspicious email asking for credentials?"
         ],
         "EU AI Act": [
-            "What is the main objective of the EU AI Act?",
-            "How does the EU AI Act classify high-risk AI systems?",
-            "What responsibilities do organizations have under the EU AI Act?",
-            "What kinds of AI practices are prohibited under the EU AI Act?",
-            "How can companies ensure compliance with the EU AI Act during AI development?"
+            "What is the main objective of the EU AI Act?"]
         ],
         "Maatschappelijke agenda 2023-2027": [
             "What is the primary goal of the Maatschappelijke agenda 2023-2027?",
