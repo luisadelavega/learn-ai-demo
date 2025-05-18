@@ -89,3 +89,38 @@ def get_questions_for_topic(topic: str) -> list:
             "What actions can employees take to contribute to its objectives?"
         ]
     }.get(topic, default)
+
+def evaluate_all_responses(qa_pairs: list, topic: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: No OpenAI client."
+
+    formatted = "\n\n".join([f"Q: {q}\nA: {a}" for q, a in qa_pairs])
+    prompt = f"""
+You are a knowledge assessment evaluator for employee training on the topic of {topic}.
+
+Here is a complete set of questions and user answers:
+
+{formatted}
+
+Now provide a structured final evaluation that includes:
+✅ Strengths  
+⚠️ Areas to Improve  
+💡 Suggestions  
+⭐ Overall Rating (Needs Improvement / Good / Excellent)
+
+Be concise, professional, and helpful.
+""".strip()
+
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a final assessment evaluator."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating final summary: {e}"
