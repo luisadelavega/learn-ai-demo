@@ -10,7 +10,7 @@ st.session_state.setdefault("chat_started", False)
 st.session_state.setdefault("messages", [])
 st.session_state.setdefault("question_index", 0)
 st.session_state.setdefault("attempt_count", 0)  # Track responses per question
-st.session_state.setdefault("qa_pairs", [])  # Track question-answer pairs for final summary
+st.session_state.setdefault("qa_pairs", [])  # Track Q&A for final summary
 st.session_state.setdefault("final_topic", "")
 st.session_state.setdefault("questions", [])
 st.session_state.setdefault("final_summary_displayed", False)
@@ -85,21 +85,23 @@ if st.session_state.page == "User":
                     attempts=st.session_state.attempt_count
                 )
 
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                with st.chat_message("assistant"):
-                    st.markdown(response)
+                # Show assistant's message only for the 1st attempt
+                if st.session_state.attempt_count == 1:
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    with st.chat_message("assistant"):
+                        st.markdown(response)
 
-                # If 2 attempts done, move to next question
+                # If second attempt, move to next question without showing another follow-up
                 if st.session_state.attempt_count >= 2 or "Let's move on to the next question" in response:
                     st.session_state.qa_pairs.append((current_q, prompt))
                     st.session_state.question_index += 1
                     st.session_state.attempt_count = 0
 
+                    # Show next question or final summary
                     if st.session_state.question_index < len(st.session_state.questions):
                         next_q = st.session_state.questions[st.session_state.question_index]
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
                     else:
-                        # Final summary
                         with st.spinner("Generating your overall evaluation..."):
                             summary = evaluate_all_responses(
                                 st.session_state.qa_pairs,
@@ -114,5 +116,3 @@ if st.session_state.page == "User":
 elif st.session_state.page == "Manager":
     st.subheader("📊 Manager Dashboard")
     st.info("This section is under development. Check back soon!")
-
-
