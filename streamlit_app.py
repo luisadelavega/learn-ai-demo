@@ -15,11 +15,22 @@ st.session_state.setdefault("final_topic", "")
 st.session_state.setdefault("questions", [])
 st.session_state.setdefault("final_summary_displayed", False)
 st.session_state.setdefault("waiting_for_input", True)
+st.session_state.setdefault("manager_summary", "")
+st.session_state.setdefault("new_evaluation_available", False)
 
 # --- Sidebar Navigation ---
 with st.sidebar:
     st.markdown("## 🔍 Navigation")
-    if st.button("👤 User"):
+
+    user_clicked = st.button("👤 User")
+
+    manager_label = "📊 Manager"
+    if st.session_state.new_evaluation_available:
+        manager_label = "🟥 📊 Manager"
+
+    manager_clicked = st.button(manager_label)
+
+    if user_clicked:
         st.session_state.page = "User"
         st.session_state.chat_started = False
         st.session_state.messages = []
@@ -29,8 +40,10 @@ with st.sidebar:
         st.session_state.questions = []
         st.session_state.final_summary_displayed = False
         st.session_state.waiting_for_input = True
-    if st.button("📊 Manager"):
+
+    if manager_clicked:
         st.session_state.page = "Manager"
+        st.session_state.new_evaluation_available = False  # reset alert
 
 # --- Page Header ---
 st.title("🧠 Nubo Knowledge Checker")
@@ -93,13 +106,14 @@ if st.session_state.page == "User":
                 )
 
                 if st.session_state.attempt_count == 1:
-                    # Show follow-up only on first attempt
+                    # First response → show follow-up
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     with st.chat_message("assistant"):
                         st.markdown(response)
-                    st.session_state.waiting_for_input = True  # wait for second input
+                    st.session_state.waiting_for_input = True
+
                 else:
-                    # After second answer, move on
+                    # Second response → move on
                     st.session_state.qa_pairs.append((current_q, prompt))
                     st.session_state.question_index += 1
                     st.session_state.attempt_count = 0
@@ -108,18 +122,18 @@ if st.session_state.page == "User":
                     if st.session_state.question_index < len(st.session_state.questions):
                         next_q = st.session_state.questions[st.session_state.question_index]
 
-                        # 👇 Transition message
+                        # Transition message
                         transition_msg = "Thanks for your answer. Moving on to the next question..."
                         st.session_state.messages.append({"role": "assistant", "content": transition_msg})
                         with st.chat_message("assistant"):
                             st.markdown(transition_msg)
 
-                        # 👇 Next question
+                        # Next question
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
                         with st.chat_message("assistant"):
                             st.markdown(next_q)
                     else:
-                        # All done → show final summary
+                        # All questions done → generate summary
                         with st.spinner("Generating your overall evaluation..."):
                             summary = evaluate_all_responses(
                                 st.session_state.qa_pairs,
@@ -127,10 +141,18 @@ if st.session_state.page == "User":
                             )
                             st.session_state.messages.append({"role": "assistant", "content": summary})
                             st.session_state.final_summary_displayed = True
+
+                            # Manager summary + red alert
+                            st.session_state.manager_summary = f"### 📋 Team Assessment Summary for {st.session_state.final_topic}\n\n{summary}"
+                            st.session_state.new_evaluation_available = True
+
                             with st.chat_message("assistant"):
                                 st.markdown(summary)
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
     st.subheader("📊 Manager Dashboard")
-    st.info("This section is under development. Check back soon!")
+    if st.session_state.manager_summary:
+        st.markdown(st.session_state.manager_summary)
+    else:
+        st.info("No evaluations available yet. Ask a team member to complete the assessment.")
