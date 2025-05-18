@@ -9,11 +9,12 @@ st.session_state.setdefault("page", "User")
 st.session_state.setdefault("chat_started", False)
 st.session_state.setdefault("messages", [])
 st.session_state.setdefault("question_index", 0)
-st.session_state.setdefault("attempt_count", 0)  # Track responses per question
-st.session_state.setdefault("qa_pairs", [])  # Track Q&A for final summary
+st.session_state.setdefault("attempt_count", 0)
+st.session_state.setdefault("qa_pairs", [])
 st.session_state.setdefault("final_topic", "")
 st.session_state.setdefault("questions", [])
 st.session_state.setdefault("final_summary_displayed", False)
+st.session_state.setdefault("waiting_for_input", True)
 
 # --- Sidebar Navigation ---
 with st.sidebar:
@@ -27,6 +28,7 @@ with st.sidebar:
         st.session_state.qa_pairs = []
         st.session_state.questions = []
         st.session_state.final_summary_displayed = False
+        st.session_state.waiting_for_input = True
     if st.button("📊 Manager"):
         st.session_state.page = "Manager"
 
@@ -57,6 +59,7 @@ if st.session_state.page == "User":
         st.session_state.final_topic = final_topic
         st.session_state.questions = get_questions_for_topic(final_topic)
         st.session_state.final_summary_displayed = False
+        st.session_state.waiting_for_input = True
 
         first_question = st.session_state.questions[0]
         st.session_state.messages.append({"role": "assistant", "content": first_question})
@@ -67,10 +70,11 @@ if st.session_state.page == "User":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-        if st.session_state.question_index < len(st.session_state.questions):
+        if st.session_state.question_index < len(st.session_state.questions) and st.session_state.waiting_for_input:
             prompt = st.chat_input("Your answer...")
 
             if prompt:
+                st.session_state.waiting_for_input = False
                 st.session_state.messages.append({"role": "user", "content": prompt})
                 with st.chat_message("user"):
                     st.markdown(prompt)
@@ -85,19 +89,20 @@ if st.session_state.page == "User":
                     attempts=st.session_state.attempt_count
                 )
 
-                # Show assistant's message only for the 1st attempt
+                # Only show follow-up on first attempt
                 if st.session_state.attempt_count == 1:
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     with st.chat_message("assistant"):
                         st.markdown(response)
-
-                # If second attempt, move to next question without showing another follow-up
-                if st.session_state.attempt_count >= 2 or "Let's move on to the next question" in response:
+                    st.session_state.waiting_for_input = True  # allow 2nd response
+                else:
+                    # Final user response stored and move to next
                     st.session_state.qa_pairs.append((current_q, prompt))
                     st.session_state.question_index += 1
                     st.session_state.attempt_count = 0
+                    st.session_state.waiting_for_input = True
 
-                    # Show next question or final summary
+                    # Ask next question or generate summary
                     if st.session_state.question_index < len(st.session_state.questions):
                         next_q = st.session_state.questions[st.session_state.question_index]
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
