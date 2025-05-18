@@ -70,7 +70,10 @@ if st.session_state.page == "User":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-        if st.session_state.question_index < len(st.session_state.questions) and st.session_state.waiting_for_input:
+        if (
+            st.session_state.question_index < len(st.session_state.questions)
+            and st.session_state.waiting_for_input
+        ):
             prompt = st.chat_input("Your answer...")
 
             if prompt:
@@ -89,24 +92,34 @@ if st.session_state.page == "User":
                     attempts=st.session_state.attempt_count
                 )
 
-                # Only show follow-up on first attempt
                 if st.session_state.attempt_count == 1:
+                    # Show follow-up only on first attempt
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     with st.chat_message("assistant"):
                         st.markdown(response)
-                    st.session_state.waiting_for_input = True  # allow 2nd response
+                    st.session_state.waiting_for_input = True  # wait for second input
                 else:
-                    # Final user response stored and move to next
+                    # After second answer, move on
                     st.session_state.qa_pairs.append((current_q, prompt))
                     st.session_state.question_index += 1
                     st.session_state.attempt_count = 0
                     st.session_state.waiting_for_input = True
 
-                    # Ask next question or generate summary
                     if st.session_state.question_index < len(st.session_state.questions):
                         next_q = st.session_state.questions[st.session_state.question_index]
+
+                        # 👇 Transition message
+                        transition_msg = "Thanks for your answer. Moving on to the next question..."
+                        st.session_state.messages.append({"role": "assistant", "content": transition_msg})
+                        with st.chat_message("assistant"):
+                            st.markdown(transition_msg)
+
+                        # 👇 Next question
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
+                        with st.chat_message("assistant"):
+                            st.markdown(next_q)
                     else:
+                        # All done → show final summary
                         with st.spinner("Generating your overall evaluation..."):
                             summary = evaluate_all_responses(
                                 st.session_state.qa_pairs,
