@@ -22,15 +22,8 @@ st.session_state.setdefault("new_evaluation_available", False)
 with st.sidebar:
     st.markdown("## 🔍 Navigation")
 
-    user_clicked = st.button("👤 User")
-
-    manager_label = "📊 Manager"
-    if st.session_state.new_evaluation_available:
-        manager_label = "🟥 📊 Manager"
-
-    manager_clicked = st.button(manager_label)
-
-    if user_clicked:
+    # --- User tab ---
+    if st.button("👤 User"):
         st.session_state.page = "User"
         st.session_state.chat_started = False
         st.session_state.messages = []
@@ -41,9 +34,17 @@ with st.sidebar:
         st.session_state.final_summary_displayed = False
         st.session_state.waiting_for_input = True
 
-    if manager_clicked:
+    # --- Manager tab with red alert ---
+    if st.session_state.new_evaluation_available:
+        manager_clicked = st.sidebar.markdown(
+            f"<a href='/?page=Manager' style='color: red; font-weight: bold;'>📊 Manager (New)</a>",
+            unsafe_allow_html=True
+        )
         st.session_state.page = "Manager"
-        st.session_state.new_evaluation_available = False  # reset alert
+        st.session_state.new_evaluation_available = False
+    else:
+        if st.button("📊 Manager"):
+            st.session_state.page = "Manager"
 
 # --- Page Header ---
 st.title("🧠 Nubo Knowledge Checker")
