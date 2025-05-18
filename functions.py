@@ -96,20 +96,22 @@ def evaluate_all_responses(qa_pairs: list, topic: str, model: str = "gpt-4o") ->
         return "Error: No OpenAI client."
 
     formatted = "\n\n".join([f"Q: {q}\nA: {a}" for q, a in qa_pairs])
-    prompt = f"""
-You are a knowledge assessment evaluator for employee training on the topic of {topic}.
 
-Here is a complete set of questions and user answers:
+    prompt = f"""
+You are a knowledge assessment evaluator summarizing results for a team training session on the topic of {topic}.
+
+Below are anonymized answers to several open-ended questions collected from team members:
 
 {formatted}
 
-Now provide a structured final evaluation that includes:
-✅ Strengths  
-⚠️ Areas to Improve  
-💡 Suggestions  
-⭐ Overall Rating (Needs Improvement / Good / Excellent)
+Please write a generalized and professional summary for a manager. Do not refer to individuals or users. Instead, focus on:
 
-Be concise, professional, and helpful.
+✅ Common strengths or well-understood concepts across the team  
+⚠️ Shared areas where understanding appears weaker  
+💡 1–2 suggestions to guide team-wide improvement  
+⭐ Overall team rating (Needs Improvement / Good / Excellent)
+
+Keep it high-level, objective, and actionable.
 """.strip()
 
     try:
