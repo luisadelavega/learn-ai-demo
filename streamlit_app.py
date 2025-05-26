@@ -67,7 +67,7 @@ st.write("Test your understanding and get instant feedback from Nubo.")
 if st.session_state.page == "User":
     selected_topic = st.selectbox(
         "Choose a topic:",
-        ["EU AI Act", "GDPR", "Cybersecurity", "Maatschappelijke agenda 2023-2027", "Other"],
+        ["EU AI Act", "GDPR", "Cybersecurity"],
         key="topic"
     )
 
@@ -200,7 +200,7 @@ elif st.session_state.page == "Manager":
         st.info("No evaluation data available yet.")
     else:
         # Show dropdown with unique topics
-        topics = df["chat"].unique().tolist()
+        topics = ["EU AI Act", "GDPR", "Cybersecurity"]
         selected_topic = st.selectbox("Select a topic:", topics)
 
         if st.button("Run Evaluation Summary"):
