@@ -205,8 +205,10 @@ elif st.session_state.page == "Manager":
 
         if st.button("Run Evaluation Summary"):
             # Collect all chats for the selected topic
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            df_final = conn.read()
             
-            topic_chats = df[df["topic"] == selected_topic]["chat"].tolist()
+            topic_chats = df_final[df_final["topic"] == selected_topic]["chat"].tolist()
             st.write(topic_chats)
             st.write(df)
 
