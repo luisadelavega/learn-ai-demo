@@ -148,7 +148,7 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
 
         # Write back to sheet
         conn.update(worksheet="Sheet1", data=updated_df)
-        st.success("Chat saved to Google Sheets!")
+        #st.success("Chat saved to Google Sheets!")
 
     except Exception as e:
         st.error(f"Error saving to Google Sheets: {e}")
