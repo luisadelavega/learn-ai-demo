@@ -39,7 +39,7 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
 
     # Print results.
     for row in df.itertuples():
-        st.write(f"{row.name} has a :{row.pet}:")
+        st.write(f"{row.topic} has a :{row.chat}:")
 
     # worksheet = conn.open("Answers_pilot").sheet1
 
