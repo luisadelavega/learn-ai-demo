@@ -2,6 +2,7 @@ import streamlit as st
 import openai
 import os
 import gspread
+from streamlit_gsheets import GSheetsConnection
 
 # --- Initialize OpenAI client ---
 def get_client():
@@ -28,7 +29,10 @@ def save_assessment_to_topic_file(qa_pairs: list, summary: str, topic: str):
 
 def save_chat_to_gsheet(topic: str, chat_text: str):
     # Connect using the Streamlit GSheets connector
-    conn = st.connection("gsheets", type="gspread")
+    #conn = st.connection("gsheets", type="gspread")
+
+    # Create a connection object.
+    conn = st.connection("gsheets", type=GSheetsConnection)
 
     worksheet = conn.open("Answers_pilot").sheet1
 
