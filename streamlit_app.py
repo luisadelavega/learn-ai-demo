@@ -184,7 +184,7 @@ elif st.session_state.page == "Manager":
     if df is None or df.empty:
         st.info("No evaluation data available yet.")
     else:
-        topics = df["Topic"].unique().tolist()
+        topics = df["topic"].unique().tolist()
         selected_topic = st.selectbox("Select a topic:", topics)
 
         if st.button("Run Evaluation Summary"):
