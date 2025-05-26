@@ -194,7 +194,7 @@ elif st.session_state.page == "Manager":
     # Connect to Google Sheet and read data
     from streamlit_gsheets import GSheetsConnection
     conn = st.connection("gsheets", type=GSheetsConnection)
-    df = conn.read(worksheet="Sheet1")
+    df = conn.read()
 
     if df is None or df.empty:
         st.info("No evaluation data available yet.")
