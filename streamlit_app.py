@@ -1,5 +1,10 @@
 import streamlit as st
-from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses
+from functions import (
+    get_questions_for_topic,
+    evaluate_user_response,
+    evaluate_all_responses,
+    save_assessment_to_topic_file
+)
 import random 
 
 # --- Page Config ---
@@ -19,6 +24,7 @@ st.session_state.setdefault("waiting_for_input", True)
 st.session_state.setdefault("manager_summary", "")
 st.session_state.setdefault("new_evaluation_available", False)
 
+# --- Conversational Transition Messages ---
 transition_messages = [
     "Thanks for your reply. I was also wondering...",
     "Thanks for your reply. That makes me curious about...",
@@ -37,7 +43,6 @@ transition_messages = [
 with st.sidebar:
     st.markdown("## 🔍 Navigation")
 
-    # --- User tab ---
     if st.button("👤 User"):
         st.session_state.page = "User"
         st.session_state.chat_started = False
@@ -49,17 +54,14 @@ with st.sidebar:
         st.session_state.final_summary_displayed = False
         st.session_state.waiting_for_input = True
 
-    # --- Manager tab with red alert ---
     if st.session_state.new_evaluation_available:
-        manager_clicked = st.sidebar.markdown(
-            f"<a href='/?page=Manager' style='color: red; font-weight: bold;'>📊 Manager (New)</a>",
-            unsafe_allow_html=True
-        )
+        manager_button = st.button("🟥 📊 Manager (New)")
+    else:
+        manager_button = st.button("📊 Manager")
+
+    if manager_button:
         st.session_state.page = "Manager"
         st.session_state.new_evaluation_available = False
-    else:
-        if st.button("📊 Manager"):
-            st.session_state.page = "Manager"
 
 # --- Page Header ---
 st.title("🧠 Nubo Knowledge Checker")
@@ -69,7 +71,7 @@ st.write("Test your understanding and get instant feedback from Nubo.")
 if st.session_state.page == "User":
     selected_topic = st.selectbox(
         "Choose a topic:",
-        ["EU AI Act", "GDPR", "Cybersecurity", "Other"],
+        ["EU AI Act", "GDPR", "Cybersecurity", "Maatschappelijke agenda 2023-2027", "Other"],
         key="topic"
     )
 
@@ -162,8 +164,27 @@ if st.session_state.page == "User":
                             st.session_state.manager_summary = f"### 📋 Team Assessment Summary for {st.session_state.final_topic}\n\n{summary}"
                             st.session_state.new_evaluation_available = True
 
+                            # ✅ Save chat to topic file
+                            save_assessment_to_topic_file(
+                                qa_pairs=st.session_state.qa_pairs,
+                                summary=summary,
+                                topic=st.session_state.final_topic
+                            )
+
                             with st.chat_message("assistant"):
                                 st.markdown(summary)
+
+                        # Offer restart option
+                        if st.button("🔄 Start New Assessment"):
+                            st.session_state.page = "User"
+                            st.session_state.chat_started = False
+                            st.session_state.messages = []
+                            st.session_state.question_index = 0
+                            st.session_state.attempt_count = 0
+                            st.session_state.qa_pairs = []
+                            st.session_state.questions = []
+                            st.session_state.final_summary_displayed = False
+                            st.session_state.waiting_for_input = True
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
