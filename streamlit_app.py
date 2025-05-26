@@ -210,9 +210,6 @@ elif st.session_state.page == "Manager":
             # Combine all chats into one text block
             combined_text = "\n\n".join(topic_chats)
 
-            # Generate a summarized evaluation (you can use your LLM here)
-            from functions import generate_manager_summary
-
             summary = generate_manager_summary(selected_topic, combined_text)
 
             st.markdown(f"### 📋 Team Summary for {selected_topic}")
