@@ -95,7 +95,7 @@ Collected Responses:
                 {"role": "system", "content": "You are a team assessment summarizer."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
+            temperature=0.5,
         )
         return completion.choices[0].message.content.strip()
     except Exception as e:
@@ -213,7 +213,7 @@ Be concise, professional, and helpful.
                 {"role": "system", "content": "You are a final assessment evaluator."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
+            temperature=0.5,
         )
         return completion.choices[0].message.content.strip()
     except Exception as e:
