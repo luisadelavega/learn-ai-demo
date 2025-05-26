@@ -1,6 +1,12 @@
 import streamlit as st
-from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses, save_chat_to_gsheet, generate_manager_summary
-import random 
+from functions import (
+    get_questions_for_topic,
+    evaluate_user_response,
+    evaluate_all_responses,
+    save_chat_to_gsheet,
+    generate_manager_summary,
+)
+import random
 from streamlit_gsheets import GSheetsConnection
 
 # --- Page Config ---
@@ -20,7 +26,6 @@ st.session_state.setdefault("waiting_for_input", True)
 st.session_state.setdefault("manager_summary", "")
 st.session_state.setdefault("new_evaluation_available", False)
 
-# --- Conversational Transition Messages ---
 transition_messages = [
     "Thanks for your reply. I was also wondering...",
     "Thanks for your reply. That makes me curious about...",
@@ -32,7 +37,7 @@ transition_messages = [
     "Great, thank you! I’m also interested in...",
     "That’s a good point. How would you approach...",
     "Thanks for your thoughts! I’m thinking about...",
-    "Appreciate that! Let’s explore this further..."
+    "Appreciate that! Let’s explore this further...",
 ]
 
 # --- Sidebar Navigation ---
@@ -51,11 +56,11 @@ with st.sidebar:
         st.session_state.waiting_for_input = True
 
     if st.session_state.new_evaluation_available:
-        manager_button = st.button("🟥 📊 Manager (New)")
-    else:
-        manager_button = st.button("📊 Manager")
-
-    if manager_button:
+        st.sidebar.markdown(
+            f"<span style='color: red; font-weight: bold;'>📊 Manager (New)</span>",
+            unsafe_allow_html=True
+        )
+    if st.button("📊 Manager"):
         st.session_state.page = "Manager"
         st.session_state.new_evaluation_available = False
 
@@ -67,7 +72,7 @@ st.write("Test your understanding and get instant feedback from Nubo.")
 if st.session_state.page == "User":
     selected_topic = st.selectbox(
         "Choose a topic:",
-        ["EU AI Act", "GDPR", "Cybersecurity"],
+        ["EU AI Act", "GDPR", "Cybersecurity", "Other"],
         key="topic"
     )
 
@@ -91,7 +96,6 @@ if st.session_state.page == "User":
         first_question = st.session_state.questions[0]
         st.session_state.messages.append({"role": "assistant", "content": first_question})
 
-    # Show chat messages
     if st.session_state.chat_started:
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
@@ -120,99 +124,71 @@ if st.session_state.page == "User":
                 )
 
                 if st.session_state.attempt_count == 1:
-                    # First response → show follow-up
+                    # First response → save and ask follow-up
+                    st.session_state.qa_pairs.append((current_q, prompt))
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     with st.chat_message("assistant"):
                         st.markdown(response)
                     st.session_state.waiting_for_input = True
 
                 else:
-                    # Second response → move on
-                    st.session_state.qa_pairs.append((current_q, prompt))
+                    # Second response → save follow-up, move to next
+                    st.session_state.qa_pairs.append((f"Follow-up on: {current_q}", prompt))
                     st.session_state.question_index += 1
                     st.session_state.attempt_count = 0
                     st.session_state.waiting_for_input = True
 
                     if st.session_state.question_index < len(st.session_state.questions):
                         next_q = st.session_state.questions[st.session_state.question_index]
-
-                        # Transition message
                         transition_msg = random.choice(transition_messages)
+
                         st.session_state.messages.append({"role": "assistant", "content": transition_msg})
                         with st.chat_message("assistant"):
                             st.markdown(transition_msg)
 
-                        # Next question
                         st.session_state.messages.append({"role": "assistant", "content": next_q})
                         with st.chat_message("assistant"):
                             st.markdown(next_q)
                     else:
                         # All questions done → generate summary
-                        with st.spinner("Generating your overall evaluation..."):
-                            summary = evaluate_all_responses(
-                                st.session_state.qa_pairs,
-                                st.session_state.final_topic
-                            )
-                            st.session_state.messages.append({"role": "assistant", "content": summary})
-                            st.session_state.final_summary_displayed = True
+                        if not st.session_state.final_summary_displayed:
+                            with st.spinner("Generating your overall evaluation..."):
+                                summary = evaluate_all_responses(
+                                    st.session_state.qa_pairs,
+                                    st.session_state.final_topic
+                                )
+                                st.session_state.messages.append({"role": "assistant", "content": summary})
+                                st.session_state.final_summary_displayed = True
 
-                            # Manager summary + red alert
-                            st.session_state.manager_summary = f"### 📋 Team Assessment Summary for {st.session_state.final_topic}\n\n{summary}"
-                            st.session_state.new_evaluation_available = True
+                                # Save only current session's chat
+                                chat_history = "\n".join(
+                                    f"Q: {q} A: {a}" for q, a in st.session_state.qa_pairs
+                                )
+                                save_chat_to_gsheet(
+                                    topic=st.session_state.final_topic,
+                                    chat_text=chat_history
+                                )
 
-                            # ✅ Build full chat text
-                            chat_history = ""
-                            for q, a in st.session_state.qa_pairs:
-                                chat_history += f"Q: {q}\nA: {a}\n"
-                            chat_history += f"\nSummary:\n{summary}"
+                                st.session_state.new_evaluation_available = True
 
-                            # ✅ Save to Google Sheet
-                            save_chat_to_gsheet(
-                                topic=st.session_state.final_topic,
-                                chat_text=chat_history
-                            )
-
-                            with st.chat_message("assistant"):
-                                st.markdown(summary)
-
-                        # Offer restart option
-                        if st.button("🔄 Start New Assessment"):
-                            st.session_state.page = "User"
-                            st.session_state.chat_started = False
-                            st.session_state.messages = []
-                            st.session_state.question_index = 0
-                            st.session_state.attempt_count = 0
-                            st.session_state.qa_pairs = []
-                            st.session_state.questions = []
-                            st.session_state.final_summary_displayed = False
-                            st.session_state.waiting_for_input = True
+                                with st.chat_message("assistant"):
+                                    st.markdown(summary)
 
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
     st.subheader("📊 Manager Dashboard")
 
-    # Connect to Google Sheet and read data
-    from streamlit_gsheets import GSheetsConnection
     conn = st.connection("gsheets", type=GSheetsConnection)
-    df = conn.read()
+    df = conn.read(worksheet="Sheet1", ttl=0)
 
     if df is None or df.empty:
         st.info("No evaluation data available yet.")
     else:
-        # Show dropdown with unique topics
-        topics = ["EU AI Act", "GDPR", "Cybersecurity"]
+        topics = df["Topic"].unique().tolist()
         selected_topic = st.selectbox("Select a topic:", topics)
 
         if st.button("Run Evaluation Summary"):
-            # Collect all chats for the selected topic
-            conn = st.connection("gsheets", type=GSheetsConnection)
-            df_final = conn.read(ttl=0)
-            
-            topic_chats = df_final[df_final["topic"] == selected_topic]["chat"].tolist()
-            st.write(topic_chats)
-            st.write(df)
-
-            # Combine all chats into one text block
+            topic_chats = df[df["Topic"] == selected_topic]["Chat"].tolist()
             combined_text = "\n\n".join(topic_chats)
 
             summary = generate_manager_summary(selected_topic, combined_text)
