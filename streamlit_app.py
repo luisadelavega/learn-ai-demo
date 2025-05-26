@@ -200,7 +200,7 @@ elif st.session_state.page == "Manager":
         st.info("No evaluation data available yet.")
     else:
         # Show dropdown with unique topics
-        topics = df["Topic"].unique().tolist()
+        topics = df["topic"].unique().tolist()
         selected_topic = st.selectbox("Select a topic:", topics)
 
         if st.button("Run Evaluation Summary"):
