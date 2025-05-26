@@ -34,9 +34,16 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
     # Create a connection object.
     conn = st.connection("gsheets", type=GSheetsConnection)
 
-    worksheet = conn.open("Answers_pilot").sheet1
 
-    worksheet.append_row([topic, chat_text])
+    df = conn.read()
+
+    # Print results.
+    for row in df.itertuples():
+        st.write(f"{row.name} has a :{row.pet}:")
+
+    # worksheet = conn.open("Answers_pilot").sheet1
+
+    # worksheet.append_row([topic, chat_text])
 
 
     # Write updated DataFrame back to Google Sheets
