@@ -1,5 +1,6 @@
 import streamlit as st
 import openai
+import os
 
 # --- Initialize OpenAI client ---
 def get_client():
@@ -9,6 +10,19 @@ def get_client():
     except Exception:
         st.error("OpenAI API key not found.")
         return None
+
+def save_assessment_to_topic_file(qa_pairs: list, summary: str, topic: str):
+    # Create a safe filename from topic
+    filename = topic.lower().replace(" ", "_") + "_chats.txt"
+
+    log_entry = f"\n\n=== New Assessment on {topic} ===\n"
+    for q, a in qa_pairs:
+        log_entry += f"Q: {q}\nA: {a}\n"
+    log_entry += f"\nSummary:\n{summary}\n"
+    log_entry += f"{'=' * 40}\n"
+
+    with open(filename, "a", encoding="utf-8") as file:
+        file.write(log_entry)
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
