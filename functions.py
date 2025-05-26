@@ -29,7 +29,7 @@ def save_assessment_to_topic_file(qa_pairs: list, summary: str, topic: str):
 
 def save_chat_to_gsheet(topic: str, chat_text: str):
     # Authenticate with Google Sheets
-    gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
+    gc = gspread.service_account_from_dict(st.secrets["connections.gsheets"])
 
     # Open the target Google Sheet by name
     sh = gc.open("Answers_pilot")  # ← replace with your sheet name
