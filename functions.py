@@ -1,6 +1,7 @@
 import streamlit as st
 import openai
 from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 
 # --- Initialize OpenAI client ---
 def get_client():
