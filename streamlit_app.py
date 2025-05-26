@@ -1,5 +1,6 @@
 import streamlit as st
 from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses
+import random 
 
 # --- Page Config ---
 st.set_page_config(page_title="Nubo Knowledge Checker", page_icon="🧠")
@@ -17,6 +18,20 @@ st.session_state.setdefault("final_summary_displayed", False)
 st.session_state.setdefault("waiting_for_input", True)
 st.session_state.setdefault("manager_summary", "")
 st.session_state.setdefault("new_evaluation_available", False)
+
+transition_messages = [
+    "Thanks for your reply. I was also wondering...",
+    "Thanks for your reply. That makes me curious about...",
+    "Interesting! It also makes me think about...",
+    "Thanks for sharing that. I’m curious how you see...",
+    "I appreciate your input. What’s your take on...",
+    "Thanks for your answer. It makes me wonder...",
+    "Hmm, that’s helpful. What about...",
+    "Great, thank you! I’m also interested in...",
+    "That’s a good point. How would you approach...",
+    "Thanks for your thoughts! I’m thinking about...",
+    "Appreciate that! Let’s explore this further..."
+]
 
 # --- Sidebar Navigation ---
 with st.sidebar:
@@ -124,7 +139,7 @@ if st.session_state.page == "User":
                         next_q = st.session_state.questions[st.session_state.question_index]
 
                         # Transition message
-                        transition_msg = "Thanks for your answer. Moving on to the next question..."
+                        transition_msg = random.choice(transition_messages)
                         st.session_state.messages.append({"role": "assistant", "content": transition_msg})
                         with st.chat_message("assistant"):
                             st.markdown(transition_msg)
