@@ -53,21 +53,18 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
     # Read existing data (as list of dicts)
     data = conn.read(worksheet="Sheet1")
 
-    # Convert to list of lists (if empty, start with headers)
-    if data is None or len(data) == 0:
-        rows = [["topic", "chat"]]
-    else:
-        # Extract headers
-        headers = list(data[0].keys())
-        rows = [headers]
-        for row in data:
-            rows.append([row.get(h, "") for h in headers])
+    if df is None or df.empty:
+        df = pd.DataFrame(columns=["Topic", "Chat"])
 
-    # Append new row
-    rows.append([topic, chat_text])
+    # Add the new row
+    df.loc[len(df)] = [topic, chat_text]
 
-    # Write back all rows
-    conn.update(worksheet="Sheet1", data=rows)
+    # Update the sheet
+    conn.update(worksheet="Sheet1", data=df)
+
+
+
+
 
 
 
