@@ -2,7 +2,6 @@ import streamlit as st
 import openai
 import os
 import gspread
-import pandas as pd
 
 # --- Initialize OpenAI client ---
 def get_client():
@@ -31,17 +30,13 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
     # Connect using the Streamlit GSheets connector
     conn = st.connection("gsheets", type="gspread")
 
-    # Read current sheet data into a DataFrame
-    df = conn.read()
+    worksheet = conn.open("Answers_pilot").sheet1
 
-    # Create a new row
-    new_row = {"Topic": topic, "Chat": chat_text}
+    worksheet.append_row([topic, chat_text])
 
-    # Append the new row to the DataFrame
-    df = df._append(new_row, ignore_index=True)
 
     # Write updated DataFrame back to Google Sheets
-    conn.update(worksheet="Sheet1", data=df)
+    #conn.update(worksheet="Sheet1", data=df)
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
