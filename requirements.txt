@@ -2,3 +2,4 @@ streamlit
 replicate
 openai
 gspread
+streamlit_gsheets
