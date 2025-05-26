@@ -1,10 +1,5 @@
 import streamlit as st
-from functions import (
-    get_questions_for_topic,
-    evaluate_user_response,
-    evaluate_all_responses,
-    save_assessment_to_topic_file
-)
+from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses
 import random 
 
 # --- Page Config ---
@@ -163,13 +158,6 @@ if st.session_state.page == "User":
                             # Manager summary + red alert
                             st.session_state.manager_summary = f"### 📋 Team Assessment Summary for {st.session_state.final_topic}\n\n{summary}"
                             st.session_state.new_evaluation_available = True
-
-                            # ✅ Save chat to topic file
-                            save_assessment_to_topic_file(
-                                qa_pairs=st.session_state.qa_pairs,
-                                summary=summary,
-                                topic=st.session_state.final_topic
-                            )
 
                             with st.chat_message("assistant"):
                                 st.markdown(summary)
