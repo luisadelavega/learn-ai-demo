@@ -139,10 +139,10 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
 
         if df is None or df.empty:
             # Create new dataframe if sheet is empty
-            df = {"Topic": [], "Chat": []}
+            df = {"topic": [], "chat": []}
 
         # Append new row
-        new_row = {"Topic": topic, "Chat": chat_text}
+        new_row = {"topic": topic, "chat": chat_text}
         updated_df = df.append(new_row, ignore_index=True)
 
         # Write back to sheet
