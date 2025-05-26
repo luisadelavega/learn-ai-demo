@@ -32,7 +32,7 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
     gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
 
     # Open the target Google Sheet by name
-    sh = gc.open("YourChatbotResponsesSheet")  # ← replace with your sheet name
+    sh = gc.open("Answers_pilot")  # ← replace with your sheet name
 
     # Select the first worksheet (or by name)
     worksheet = sh.sheet1
