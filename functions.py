@@ -3,6 +3,7 @@ import openai
 import os
 import gspread
 from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 
 # --- Initialize OpenAI client ---
 def get_client():
