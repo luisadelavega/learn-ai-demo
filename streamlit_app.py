@@ -1,5 +1,5 @@
 import streamlit as st
-from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses, save_chat_to_gsheet  
+from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses, save_chat_to_gsheet, generate_manager_summary
 import random 
 from streamlit_gsheets import GSheetsConnection
 
@@ -190,8 +190,30 @@ if st.session_state.page == "User":
 # --- MANAGER TAB ---
 elif st.session_state.page == "Manager":
     st.subheader("📊 Manager Dashboard")
-    if st.session_state.manager_summary:
-        st.markdown(st.session_state.manager_summary)
-    else:
-        st.info("No evaluations available yet. Ask a team member to complete the assessment.")
 
+    # Connect to Google Sheet and read data
+    from streamlit_gsheets import GSheetsConnection
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df = conn.read(worksheet="Sheet1")
+
+    if df is None or df.empty:
+        st.info("No evaluation data available yet.")
+    else:
+        # Show dropdown with unique topics
+        topics = df["Topic"].unique().tolist()
+        selected_topic = st.selectbox("Select a topic:", topics)
+
+        if st.button("Run Evaluation Summary"):
+            # Collect all chats for the selected topic
+            topic_chats = df[df["Topic"] == selected_topic]["Chat"].tolist()
+
+            # Combine all chats into one text block
+            combined_text = "\n\n".join(topic_chats)
+
+            # Generate a summarized evaluation (you can use your LLM here)
+            from functions import generate_manager_summary
+
+            summary = generate_manager_summary(selected_topic, combined_text)
+
+            st.markdown(f"### 📋 Team Summary for {selected_topic}")
+            st.markdown(summary)
