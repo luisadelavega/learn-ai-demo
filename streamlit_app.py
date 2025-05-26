@@ -206,7 +206,7 @@ elif st.session_state.page == "Manager":
         if st.button("Run Evaluation Summary"):
             # Collect all chats for the selected topic
             
-            topic_chats = df_summary[df_summary["topic"] == selected_topic]["chat"].tolist()
+            topic_chats = df[df["topic"] == selected_topic]["chat"].tolist()
             st.write(topic_chats)
             st.write(df)
 
