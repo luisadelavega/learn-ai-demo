@@ -54,7 +54,7 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
     data = conn.read(worksheet="Sheet1")
 
     if df is None or df.empty:
-        df = pd.DataFrame(columns=["Topic", "Chat"])
+        df = pd.DataFrame(columns=["topic", "chat"])
 
     # Add the new row
     df.loc[len(df)] = [topic, chat_text]
@@ -64,7 +64,42 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
 
 
 
+def generate_manager_summary(topic: str, combined_chats: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: No OpenAI client."
 
+    prompt = f"""
+You are a team performance evaluator.
+
+Summarize the following collected team responses on the topic of {topic}.
+
+Provide:
+✅ General strengths of the team  
+⚠️ Common areas to improve  
+💡 Team-level suggestions  
+⭐ Overall team rating (Needs Improvement / Good / Excellent)
+
+Do **not** refer to individual users.
+
+---
+
+Collected Responses:
+{combined_chats}
+""".strip()
+
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a team assessment summarizer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating manager summary: {e}"
 
 
 
