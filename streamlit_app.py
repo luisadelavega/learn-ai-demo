@@ -1,5 +1,10 @@
 import streamlit as st
-from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses
+from functions import (
+    get_questions_for_topic,
+    evaluate_user_response,
+    evaluate_all_responses,
+    save_chat_to_gsheet  # ✅ NEW: import the save-to-GSheet function
+)
 import random 
 
 # --- Page Config ---
@@ -159,6 +164,18 @@ if st.session_state.page == "User":
                             st.session_state.manager_summary = f"### 📋 Team Assessment Summary for {st.session_state.final_topic}\n\n{summary}"
                             st.session_state.new_evaluation_available = True
 
+                            # ✅ Build full chat text
+                            chat_history = ""
+                            for q, a in st.session_state.qa_pairs:
+                                chat_history += f"Q: {q}\nA: {a}\n"
+                            chat_history += f"\nSummary:\n{summary}"
+
+                            # ✅ Save to Google Sheet
+                            save_chat_to_gsheet(
+                                topic=st.session_state.final_topic,
+                                chat_text=chat_history
+                            )
+
                             with st.chat_message("assistant"):
                                 st.markdown(summary)
 
@@ -181,3 +198,4 @@ elif st.session_state.page == "Manager":
         st.markdown(st.session_state.manager_summary)
     else:
         st.info("No evaluations available yet. Ask a team member to complete the assessment.")
+
