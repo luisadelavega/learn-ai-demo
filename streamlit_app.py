@@ -1,10 +1,5 @@
 import streamlit as st
-from functions import (
-    get_questions_for_topic,
-    evaluate_user_response,
-    evaluate_all_responses,
-    save_chat_to_gsheet  # ✅ NEW: import the save-to-GSheet function
-)
+from functions import get_questions_for_topic, evaluate_user_response, evaluate_all_responses, save_chat_to_gsheet  
 import random 
 
 # --- Page Config ---
