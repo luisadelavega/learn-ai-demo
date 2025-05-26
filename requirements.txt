@@ -2,4 +2,4 @@ streamlit
 replicate
 openai
 gspread
-streamlit_gsheets
+st-gsheets-connection
