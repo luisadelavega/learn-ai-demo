@@ -3,3 +3,4 @@ replicate
 openai
 st-gsheets-connection
 gspread
+pandas
