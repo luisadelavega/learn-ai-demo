@@ -1,9 +1,6 @@
 import streamlit as st
 import openai
-import os
-import gspread
 from streamlit_gsheets import GSheetsConnection
-import pandas as pd
 
 # --- Initialize OpenAI client ---
 def get_client():
@@ -13,96 +10,6 @@ def get_client():
     except Exception:
         st.error("OpenAI API key not found.")
         return None
-
-def save_assessment_to_topic_file(qa_pairs: list, summary: str, topic: str):
-    # Create a safe filename from topic
-    filename = topic.lower().replace(" ", "_") + "_chats.txt"
-
-    log_entry = f"\n\n=== New Assessment on {topic} ===\n"
-    for q, a in qa_pairs:
-        log_entry += f"Q: {q}\nA: {a}\n"
-    log_entry += f"\nSummary:\n{summary}\n"
-    log_entry += f"{'=' * 40}\n"
-
-    with open(filename, "a", encoding="utf-8") as file:
-        file.write(log_entry)
-
-
-def save_chat_to_gsheet(topic: str, chat_text: str):
-    # Connect using the Streamlit GSheets connector
-    #conn = st.connection("gsheets", type="gspread")
-
-    # Create a connection object.
-    conn = st.connection("gsheets", type=GSheetsConnection)
-
-
-    df = conn.read()
-
-    # Print results.
-    for row in df.itertuples():
-        st.write(f"{row.topic} has a :{row.chat}:")
-
-    # worksheet = conn.open("Answers_pilot").sheet1
-
-    # worksheet.append_row([topic, chat_text])
-
-
-    # Write updated DataFrame back to Google Sheets
-    #conn.update(worksheet="Sheet1", data=df)
-
-    # Read existing data (as list of dicts)
-    data = conn.read(worksheet="Sheet1")
-
-    if df is None or df.empty:
-        df = pd.DataFrame(columns=["topic", "chat"])
-
-    # Add the new row
-    df.loc[len(df)] = [topic, chat_text]
-
-    # Update the sheet
-    conn.update(worksheet="Sheet1", data=df)
-
-
-
-def generate_manager_summary(topic: str, combined_chats: str, model: str = "gpt-4o") -> str:
-    client = get_client()
-    if not client:
-        return "Error: No OpenAI client."
-
-    prompt = f"""
-You are a team performance evaluator.
-
-Summarize the following collected team responses on the topic of {topic}.
-
-Provide:
-✅ General strengths of the team  
-⚠️ Common areas to improve  
-💡 Team-level suggestions  
-⭐ Overall team rating (Needs Improvement / Good / Excellent)
-
-Do **not** refer to individual users.
-
----
-
-Collected Responses:
-{combined_chats}
-""".strip()
-
-    try:
-        completion = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a team assessment summarizer."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5,
-        )
-        return completion.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Error generating manager summary: {e}"
-
-
-
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
@@ -150,6 +57,101 @@ def evaluate_user_response(question: str, answer: str, topic: str, attempts: int
     except Exception as e:
         return f"Error evaluating response: {e}"
 
+# --- Final overall evaluation after all Q&A ---
+def evaluate_all_responses(qa_pairs: list, topic: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: No OpenAI client."
+
+    formatted = "\n\n".join([f"Q: {q}\nA: {a}" for q, a in qa_pairs])
+    prompt = f"""
+You are a knowledge assessment evaluator for employee training on the topic of {topic}.
+
+Here is a complete set of questions and user answers:
+
+{formatted}
+
+Now provide a structured final evaluation that includes:
+✅ Strengths  
+⚠️ Areas to Improve  
+💡 Suggestions  
+⭐ Overall Rating (Needs Improvement / Good / Excellent)
+
+Be concise, professional, and helpful.
+""".strip()
+
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a final assessment evaluator."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating final summary: {e}"
+
+# --- Generate manager-level team summary ---
+def generate_manager_summary(topic: str, combined_chats: str, model: str = "gpt-4o") -> str:
+    client = get_client()
+    if not client:
+        return "Error: No OpenAI client."
+
+    prompt = f"""
+You are a team performance evaluator.
+
+Summarize the following collected responses on the topic of {topic}.
+
+Provide:
+✅ General strengths shown across the team  
+⚠️ Common areas the team needs to improve  
+💡 Suggestions for team-wide development  
+⭐ Overall team rating (Needs Improvement / Good / Excellent)
+
+Do **not** mention individual users, runs, or past sessions. Focus on team-level insights.
+
+---
+
+Collected Team Responses:
+{combined_chats}
+""".strip()
+
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a team assessment summarizer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating manager summary: {e}"
+
+# --- Save chat to Google Sheets ---
+def save_chat_to_gsheet(topic: str, chat_text: str):
+    try:
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        df = conn.read(worksheet="Sheet1", ttl=0)
+
+        if df is None or df.empty:
+            # Create new dataframe if sheet is empty
+            df = {"Topic": [], "Chat": []}
+
+        # Append new row
+        new_row = {"Topic": topic, "Chat": chat_text}
+        updated_df = df.append(new_row, ignore_index=True)
+
+        # Write back to sheet
+        conn.update(worksheet="Sheet1", data=updated_df)
+        st.success("Chat saved to Google Sheets!")
+
+    except Exception as e:
+        st.error(f"Error saving to Google Sheets: {e}")
+
 # --- Return 3 questions per topic ---
 def get_questions_for_topic(topic: str) -> list:
     if topic == "Other":
@@ -184,37 +186,3 @@ def get_questions_for_topic(topic: str) -> list:
         ]
     }.get(topic, default)
 
-def evaluate_all_responses(qa_pairs: list, topic: str, model: str = "gpt-4o") -> str:
-    client = get_client()
-    if not client:
-        return "Error: No OpenAI client."
-
-    formatted = "\n\n".join([f"Q: {q}\nA: {a}" for q, a in qa_pairs])
-    prompt = f"""
-You are a knowledge assessment evaluator for employee training on the topic of {topic}.
-
-Here is a complete set of questions and user answers:
-
-{formatted}
-
-Now provide a structured final evaluation that includes:
-✅ Strengths  
-⚠️ Areas to Improve  
-💡 Suggestions  
-⭐ Overall Rating (Needs Improvement / Good / Excellent)
-
-Be concise, professional, and helpful.
-""".strip()
-
-    try:
-        completion = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a final assessment evaluator."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5,
-        )
-        return completion.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Error generating final summary: {e}"
