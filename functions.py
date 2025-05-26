@@ -1,6 +1,8 @@
 import streamlit as st
 import openai
 import os
+import gspread
+import pandas as pd
 
 # --- Initialize OpenAI client ---
 def get_client():
@@ -23,6 +25,23 @@ def save_assessment_to_topic_file(qa_pairs: list, summary: str, topic: str):
 
     with open(filename, "a", encoding="utf-8") as file:
         file.write(log_entry)
+
+
+def save_chat_to_gsheet(topic: str, chat_text: str):
+    # Authenticate with Google Sheets
+    gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
+
+    # Open the target Google Sheet by name
+    sh = gc.open("YourChatbotResponsesSheet")  # ← replace with your sheet name
+
+    # Select the first worksheet (or by name)
+    worksheet = sh.sheet1
+
+    # Prepare the new row as a list
+    new_row = [topic, chat_text]
+
+    # Append the row to the worksheet
+    worksheet.append_row(new_row)
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
