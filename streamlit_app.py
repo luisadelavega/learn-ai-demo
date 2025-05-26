@@ -205,8 +205,15 @@ elif st.session_state.page == "Manager":
 
         if st.button("Run Evaluation Summary"):
             # Collect all chats for the selected topic
-            topic_chats = df[df["topic"] == selected_topic]["chat"].tolist()
+
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            df_summary = conn.read()
+
+            
+            topic_chats = df_summary[df_summary["topic"] == selected_topic]["chat"].tolist()
             st.write(topic_chats)
+            st.write(df_summary)
+            st.write(df)
 
             # Combine all chats into one text block
             combined_text = "\n\n".join(topic_chats)
