@@ -188,7 +188,7 @@ elif st.session_state.page == "Manager":
         selected_topic = st.selectbox("Select a topic:", topics)
 
         if st.button("Run Evaluation Summary"):
-            topic_chats = df[df["Topic"] == selected_topic]["Chat"].tolist()
+            topic_chats = df[df["topic"] == selected_topic]["chat"].tolist()
             combined_text = "\n\n".join(topic_chats)
 
             summary = generate_manager_summary(selected_topic, combined_text)
