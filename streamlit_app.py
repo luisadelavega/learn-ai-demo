@@ -72,7 +72,7 @@ st.write("Test your understanding and get instant feedback from Nubo.")
 if st.session_state.page == "User":
     selected_topic = st.selectbox(
         "Choose a topic:",
-        ["EU AI Act", "GDPR", "Cybersecurity", "Other"],
+        ["EU AI Act", "GDPR", "Cybersecurity", "Maatschappelijke agenda 2023-2027", "Other"],
         key="topic"
     )
 
