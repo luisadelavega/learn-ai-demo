@@ -21,12 +21,13 @@ def get_client():
 
 # --- Build evaluation prompt with bot rules ---
 def get_evaluation_prompt(question: str, answer: str, topic: str, attempts: int) -> str:
+    text_top_chunks=" "
     if topic=="Maatschappelijke agenda 2023-2027":
         pdf_path = "dutch_policy.pdf"
         top_chunks = rag_from_pdf(pdf_path, question, k=3)
         text_top_chunks=f"Assess the user answer and/or elaborate the follow-up question (if needed) based on this information: {top_chunks}"
     else:
-        text_topc_chunks=" "
+        text_top_chunks=" "
     final_text = f"""
 You are a knowledge assessment evaluator for employee training on the topic of {topic}.
 
@@ -38,7 +39,7 @@ Follow these instructions carefully:
 4. If the user tries to ask something unrelated, reply: My goal is to check your knowledge. Let's complete the assessment first.
 5. If the answer is satisfactory, the follow-up question is not needed.
 6. Be nice and add complements to the follow-up question whenever suitable.
-{text_topc_chunks}
+{text_top_chunks}
 
 Stay professional and constructive in your tone.
 
