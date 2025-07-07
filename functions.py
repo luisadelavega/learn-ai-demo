@@ -158,32 +158,44 @@ def get_questions_for_topic(topic: str) -> list:
     if topic == "Other":
         return ["What topic do you want to evaluate your knowledge of?"]
 
-    default = [
-        f"What is an important concept in {topic} every employee should understand?",
-        f"How would you react to a challenge related to {topic} at work?",
-        f"What could help prevent mistakes in {topic}?"
-    ]
+    default=[
+        f"Imagine you're onboarding a new colleague. How would you explain why {topic} matters in their daily work?",
+        f"You face a challenge involving {topic}. What's your first step to deal with it confidently?",
+        f"What is one habit or checklist that could help your team avoid mistakes related to {topic}?",
+        f"When has {topic} positively impacted your work — even if indirectly?",
+        f"What tools or support would make you feel more confident handling situations involving {topic}?"]
 
     return {
-        "GDPR": [
-            "What is the main purpose of the GDPR regulation?",
-            "How should a company respond if a customer requests deletion of their personal data?",
-            "What is considered a personal data breach under GDPR?"
-        ],
-        "Cybersecurity": [
-            "Imagine you discover a data breach in our system. What are the first steps you’d take?",
-            "What are the most common causes of cybersecurity incidents?",
-            "What steps should be taken to prevent phishing attacks?"
-        ],
-        "EU AI Act": [
-            "What is the main objective of the EU AI Act?",
-            "How does the EU AI Act classify high-risk AI systems?",
-            "What responsibilities do organizations have under the EU AI Act?"
-        ],
-        "Maatschappelijke agenda 2023-2027": [
-            "What is the primary goal of the Maatschappelijke agenda 2023-2027?",
-            "Which societal challenges are being addressed by the agenda?",
-            "What actions can employees take to contribute to its objectives?"
-        ]
+
+    "GDPR": [
+        "A customer requests deletion of all their personal data. What steps would you take — and how do you ensure it's done legally?",
+        "You're preparing a presentation with real customer examples. How do you make sure you're GDPR-compliant?",
+        "What’s a practical way to double-check you're not sharing personal data by mistake in everyday emails or files?",
+        "Your colleague wants to store employee birthdays in a shared file. How would you handle this under GDPR?",
+        "What's one habit you could adopt to help prevent personal data breaches in your work?"
+    ],
+    "Cybersecurity": [
+        "You receive a slightly suspicious email from a colleague asking for a file. What signs would help you decide if it’s safe?",
+        "You're working in a co-working space. What can you do to protect your screen and data?",
+        "What’s a small step your team could take this week to boost cybersecurity awareness?",
+        "You accidentally clicked on a suspicious link. What should you do immediately — and who should you inform?",
+        "What’s one tool or feature (e.g., VPN, password manager) that you think more people in your team should be using?"
+    ],
+    "EU AI Act": [
+        "Your team wants to use AI to screen job applications. What would you check to ensure compliance with the EU AI Act?",
+        "How would you explain to a colleague why AI transparency and accountability matter under the new regulation?",
+        "What practical steps can an organization take to identify if an AI tool falls into the 'high-risk' category?",
+        "You’re reviewing an AI tool for use in a safety-critical area. What red flags would you look for?",
+        "What kind of documentation or testing would help you trust an AI system more in your work?"
+    ],
+    "Maatschappelijke agenda 2023-2027": [
+        "Your project may influence one of the goals in the Maatschappelijke agenda. How can you align your work with it?",
+        "What is one concrete action employees can take to support the social themes in the agenda?",
+        "If your team had to pick one societal challenge to address this year, which one would it be — and why?",
+        "How do you think the agenda’s goals could change how we prioritize our projects in the future?",
+        "What kind of collaboration across teams would help advance the objectives of the agenda?"
+    ]
+}
+
     }.get(topic, default)
 
