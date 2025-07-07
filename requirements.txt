@@ -4,3 +4,7 @@ openai
 st-gsheets-connection
 gspread
 pandas
+PyMuPDF
+faiss-cpu
+numpy
+sentence-transformers
