@@ -193,9 +193,5 @@ def get_questions_for_topic(topic: str) -> list:
         "What is one concrete action employees can take to support the social themes in the agenda?",
         "If your team had to pick one societal challenge to address this year, which one would it be — and why?",
         "How do you think the agenda’s goals could change how we prioritize our projects in the future?",
-        "What kind of collaboration across teams would help advance the objectives of the agenda?"
-    ]
-}
-
-    }.get(topic, default)
+        "What kind of collaboration across teams would help advance the objectives of the agenda?"]}.get(topic, default)
 
