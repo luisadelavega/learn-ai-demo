@@ -71,7 +71,7 @@ st.write("Test your understanding and get instant feedback from Nubo.")
 knowledge_type = st.selectbox(
         "What are we testing?",
         ["My knowledge about the topic","The level of maturity of my department about this topic"],
-        key="topic"
+        key="assess_type"
     )
 
 
