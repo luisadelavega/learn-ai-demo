@@ -80,7 +80,7 @@ if st.session_state.page == "User":
         custom_topic = st.text_input("What topic do you want to evaluate your knowledge of?", key="custom_topic")
         final_topic = custom_topic.strip() if custom_topic else "Other"
     elif selected_topic=="Cybersecurity":
-        selected_topic = st.selectbox(
+        cybersecurity_assessment_option = st.selectbox(
         "Choose the type of assessment:",
         ["Individual Knowledge", "Departmental Processess"],
         key="topic"
