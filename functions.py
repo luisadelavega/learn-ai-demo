@@ -173,6 +173,15 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
 # --- Return 3 questions per topic ---
 def get_questions_for_topic(topic: str, knowledge_type:str) -> list:
     if knowledge_type=="My knowledge about the topic":
+        if topic == "Other":
+            return ["What topic do you want to evaluate your knowledge of?"]
+    
+        default=[
+            f"Imagine you're onboarding a new colleague. How would you explain why {topic} matters in their daily work?",
+            f"You face a challenge involving {topic}. What's your first step to deal with it confidently?",
+            f"What is one habit or checklist that could help your team avoid mistakes related to {topic}?",
+            f"When has {topic} positively impacted your work — even if indirectly?",
+            f"What tools or support would make you feel more confident handling situations involving {topic}?"]
 
         return {
             
