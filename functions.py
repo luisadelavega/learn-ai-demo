@@ -171,44 +171,87 @@ def save_chat_to_gsheet(topic: str, chat_text: str):
         st.error(f"Error saving to Google Sheets: {e}")
 
 # --- Return 3 questions per topic ---
-def get_questions_for_topic(topic: str) -> list:
-    if topic == "Other":
-        return ["What topic do you want to evaluate your knowledge of?"]
+def get_questions_for_topic(topic: str, knowledge_type:str) -> list:
+    if knowledge_type=="My knowledge about the topic":
 
-    default=[
-        f"Imagine you're onboarding a new colleague. How would you explain why {topic} matters in their daily work?",
-        f"You face a challenge involving {topic}. What's your first step to deal with it confidently?",
-        f"What is one habit or checklist that could help your team avoid mistakes related to {topic}?",
-        f"When has {topic} positively impacted your work — even if indirectly?",
-        f"What tools or support would make you feel more confident handling situations involving {topic}?"]
+        return {
+            
+                "GDPR": [
+                    "A customer requests deletion of all their personal data. What steps would you take — and how do you ensure it's done legally?",
+                    "You're preparing a presentation with real customer examples. How do you make sure you're GDPR-compliant?",
+                    "What’s a practical way to double-check you're not sharing personal data by mistake in everyday emails or files?",
+                    "Your colleague wants to store employee birthdays in a shared file. How would you handle this under GDPR?",
+                    "What's one habit you could adopt to help prevent personal data breaches in your work?"
+                ],
+                "Cybersecurity": [
+                    "You receive a slightly suspicious email from a colleague asking for a file. What signs would help you decide if it’s safe?",
+                    "You're working in a co-working space. What can you do to protect your screen and data?",
+                    "What’s a small step your team could take this week to boost cybersecurity awareness?",
+                    "You accidentally clicked on a suspicious link. What should you do immediately — and who should you inform?",
+                    "What’s one tool or feature (e.g., VPN, password manager) that you think more people in your team should be using?"
+                ],
+                "EU AI Act": [
+                    "Your team wants to use AI to screen job applications. What would you check to ensure compliance with the EU AI Act?",
+                    "How would you explain to a colleague why AI transparency and accountability matter under the new regulation?",
+                    "What practical steps can an organization take to identify if an AI tool falls into the 'high-risk' category?",
+                    "You’re reviewing an AI tool for use in a safety-critical area. What red flags would you look for?",
+                    "What kind of documentation or testing would help you trust an AI system more in your work?"
+                ],
+                "Maatschappelijke agenda 2023-2027": [
+                    "Your project may influence one of the goals in the Maatschappelijke agenda. How can you align your work with it?",
+                    "What is one concrete action employees can take to support the social themes in the agenda?",
+                    "If your team had to pick one societal challenge to address this year, which one would it be — and why?",
+                    "How do you think the agenda’s goals could change how we prioritize our projects in the future?",
+                    "What kind of collaboration across teams would help advance the objectives of the agenda?"]}.get(topic, default)
 
-    return {
 
-    "GDPR": [
-        "A customer requests deletion of all their personal data. What steps would you take — and how do you ensure it's done legally?",
-        "You're preparing a presentation with real customer examples. How do you make sure you're GDPR-compliant?",
-        "What’s a practical way to double-check you're not sharing personal data by mistake in everyday emails or files?",
-        "Your colleague wants to store employee birthdays in a shared file. How would you handle this under GDPR?",
-        "What's one habit you could adopt to help prevent personal data breaches in your work?"
-    ],
-    "Cybersecurity": [
-        "You receive a slightly suspicious email from a colleague asking for a file. What signs would help you decide if it’s safe?",
-        "You're working in a co-working space. What can you do to protect your screen and data?",
-        "What’s a small step your team could take this week to boost cybersecurity awareness?",
-        "You accidentally clicked on a suspicious link. What should you do immediately — and who should you inform?",
-        "What’s one tool or feature (e.g., VPN, password manager) that you think more people in your team should be using?"
-    ],
-    "EU AI Act": [
-        "Your team wants to use AI to screen job applications. What would you check to ensure compliance with the EU AI Act?",
-        "How would you explain to a colleague why AI transparency and accountability matter under the new regulation?",
-        "What practical steps can an organization take to identify if an AI tool falls into the 'high-risk' category?",
-        "You’re reviewing an AI tool for use in a safety-critical area. What red flags would you look for?",
-        "What kind of documentation or testing would help you trust an AI system more in your work?"
-    ],
-    "Maatschappelijke agenda 2023-2027": [
-        "Your project may influence one of the goals in the Maatschappelijke agenda. How can you align your work with it?",
-        "What is one concrete action employees can take to support the social themes in the agenda?",
-        "If your team had to pick one societal challenge to address this year, which one would it be — and why?",
-        "How do you think the agenda’s goals could change how we prioritize our projects in the future?",
-        "What kind of collaboration across teams would help advance the objectives of the agenda?"]}.get(topic, default)
+
+
+        
+
+    else:
+        if topic == "Other":
+            return ["What topic do you want to evaluate your knowledge of?"]
+    
+        default=[
+            f"Imagine you're onboarding a new colleague. How would you explain why {topic} matters in their daily work?",
+            f"You face a challenge involving {topic}. What's your first step to deal with it confidently?",
+            f"What is one habit or checklist that could help your team avoid mistakes related to {topic}?",
+            f"When has {topic} positively impacted your work — even if indirectly?",
+            f"What tools or support would make you feel more confident handling situations involving {topic}?"]
+    
+        return {
+    
+        "GDPR": [
+            "A customer requests deletion of all their personal data. What steps would you take — and how do you ensure it's done legally?",
+            "You're preparing a presentation with real customer examples. How do you make sure you're GDPR-compliant?",
+            "What’s a practical way to double-check you're not sharing personal data by mistake in everyday emails or files?",
+            "Your colleague wants to store employee birthdays in a shared file. How would you handle this under GDPR?",
+            "What's one habit you could adopt to help prevent personal data breaches in your work?"
+        ],
+        "Cybersecurity": [
+            "If a cybersecurity incident (e.g., phishing attack, data breach) occurred today, what steps would be followed? Is there a documented process everyone knows about?",
+                "How is access to systems and data managed — and how often is it reviewed or updated?",
+                "When someone joins or leaves the team, what steps are taken to grant or revoke access to tools and sensitive information?",
+                "What ensures that everyone stays up to date on cybersecurity best practices? Is there any regular training or simulation?",
+                "Are there clear guidelines on which tools (e.g., file sharing platforms, communication apps) are approved for secure work? How are these communicated?",
+                "How is sensitive information like contracts or personal data stored? Is encryption or secure storage part of the routine?",
+                "When working with external vendors or freelancers, what cybersecurity requirements or checks are in place?",
+                "Do people know where to find cybersecurity policies — and are these reviewed or discussed regularly?",
+                "How is the use of personal or unofficial tools (like personal Dropbox or WhatsApp) monitored or discouraged?",
+                "Have cybersecurity processes ever been formally reviewed? If so, what improvements came from that review?"
+        ],
+        "EU AI Act": [
+            "Your team wants to use AI to screen job applications. What would you check to ensure compliance with the EU AI Act?",
+            "How would you explain to a colleague why AI transparency and accountability matter under the new regulation?",
+            "What practical steps can an organization take to identify if an AI tool falls into the 'high-risk' category?",
+            "You’re reviewing an AI tool for use in a safety-critical area. What red flags would you look for?",
+            "What kind of documentation or testing would help you trust an AI system more in your work?"
+        ],
+        "Maatschappelijke agenda 2023-2027": [
+            "Your project may influence one of the goals in the Maatschappelijke agenda. How can you align your work with it?",
+            "What is one concrete action employees can take to support the social themes in the agenda?",
+            "If your team had to pick one societal challenge to address this year, which one would it be — and why?",
+            "How do you think the agenda’s goals could change how we prioritize our projects in the future?",
+            "What kind of collaboration across teams would help advance the objectives of the agenda?"]}.get(topic, default)
 
