@@ -97,7 +97,8 @@ if st.session_state.page == "User":
         st.session_state.attempt_count = 0
         st.session_state.qa_pairs = []
         st.session_state.final_topic = final_topic
-        st.session_state.questions = get_questions_for_topic(final_topic)
+
+        st.session_state.questions = get_questions_for_topic(final_topic, knowledge_type)
         st.session_state.final_summary_displayed = False
         st.session_state.waiting_for_input = True
 
