@@ -68,6 +68,13 @@ with st.sidebar:
 st.title("🧠 Nubo Knowledge Checker")
 st.write("Test your understanding and get instant feedback from Nubo.")
 
+knowledge_type = st.selectbox(
+        "What are we testing?",
+        ["My knowledge about the topic","The level of maturity of my department about this topic"],
+        key="topic"
+    )
+
+
 # --- USER TAB LOGIC ---
 if st.session_state.page == "User":
     selected_topic = st.selectbox(
@@ -79,12 +86,6 @@ if st.session_state.page == "User":
     if selected_topic == "Other":
         custom_topic = st.text_input("What topic do you want to evaluate your knowledge of?", key="custom_topic")
         final_topic = custom_topic.strip() if custom_topic else "Other"
-    elif selected_topic=="Cybersecurity":
-        cybersecurity_assessment_option = st.selectbox(
-        "Choose the type of assessment:",
-        ["Individual Knowledge", "Departmental Processess"],
-        key="topic"
-    )
         
     else:
         final_topic = selected_topic
